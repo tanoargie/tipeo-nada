@@ -14,3 +14,7 @@ target_link_libraries(TipeoNada ${SDL2_LIBRARIES})
 find_package(SDL2_image REQUIRED)
 include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
 target_link_libraries(TipeoNada ${SDL2_IMAGE_LIBRARIES})
+
+find_package(SDL2_ttf REQUIRED)
+include_directories(${SDL2_TTF_INCLUDE_DIRS})
+target_link_libraries(TipeoNada ${SDL2_TTF_LIBRARIES})
