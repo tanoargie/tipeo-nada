@@ -4,9 +4,11 @@
 #include "SDL_keycode.h"
 #include "SDL_render.h"
 #include "SDL_timer.h"
+#include "SDL_ttf.h"
 
 Game::Game(const char *title, int width, int height) {
-  if (SDL_Init(SDL_INIT_EVERYTHING) == 0 && IMG_Init(IMG_INIT_PNG)) {
+  if (SDL_Init(SDL_INIT_EVERYTHING) == 0 && IMG_Init(IMG_INIT_PNG) &&
+      TTF_Init() == 0) {
     cout << "Initialized!" << endl;
     window = SDL_CreateWindow("TipeoNada", SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED, width, height,
@@ -27,9 +29,14 @@ Game::Game(const char *title, int width, int height) {
     }
 
     font = TTF_OpenFont("OpenSans-Bold.ttf", 24);
+    if (font == NULL) {
+      cout << SDL_GetError();
+    }
+
     fontColor.r = 255;
     fontColor.g = 255;
     fontColor.b = 255;
+    fontColor.a = 0;
 
     srand(time(0));
 
@@ -59,20 +66,37 @@ Game::~Game() {
 
 Uint32 Game::showWord(Uint32 interval, void *param) {
   Game *game = reinterpret_cast<Game *>(param);
+  SDL_RenderClear(game->renderer);
   int random = rand() % game->words.size();
+  int randomX = rand() % SCREEN_WIDTH;
+
   string randomWord = game->words.at(random);
-  /* cout << random << " " << randomWord << endl; */
+  if (randomX > 1100 && randomWord.size() > 20) {
+    randomX -= 300;
+  }
 
-  /* backgroundImage = TTF_RenderText_Solid(font, randomWord.c_str(),
-   * fontColor); */
+  SDL_Surface *surfaceMessage =
+      TTF_RenderUTF8_Blended(game->font, randomWord.c_str(), game->fontColor);
 
-  /* backgroundTex = SDL_CreateTextureFromSurface(renderer, backgroundImage); */
-  /* int randomX = rand() % SCREEN_WIDTH; */
+  SDL_Texture *message =
+      SDL_CreateTextureFromSurface(game->renderer, surfaceMessage);
+
+  SDL_Rect dst;
+
+  dst.x = randomX;
+  dst.y = 0;
+
+  TTF_SizeUTF8(game->font, randomWord.c_str(), &dst.w, &dst.h);
+
+  SDL_RenderFillRect(game->renderer, &dst);
+
+  SDL_RenderCopy(game->renderer, message, NULL, &dst);
+  SDL_RenderPresent(game->renderer);
+
+  SDL_FreeSurface(surfaceMessage);
+  SDL_DestroyTexture(message);
 
   return interval;
-
-  /* SDL_RenderCopy(SDL_Renderer *renderer, message, const SDL_Rect *srcrect,
-   * const SDL_Rect *dstrect); */
 }
 
 void Game::handleEvents() {
@@ -91,10 +115,6 @@ void Game::handleEvents() {
   }
 }
 
-void Game::render() {
-  SDL_RenderClear(renderer);
-  SDL_RenderCopy(renderer, backgroundTex, NULL, NULL);
-  SDL_RenderPresent(renderer);
-}
+void Game::render() { SDL_RenderPresent(renderer); }
 
 bool Game::running() { return isRunning; }
