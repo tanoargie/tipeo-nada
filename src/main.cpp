@@ -1,18 +1,16 @@
 #include "Game/Game.hpp"
+#include "SDL_timer.h"
+#include "constants.cpp"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-// Screen dimension constants
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
-
-int main() {
+int main(int argc, char *argv[]) {
   Game *game = new Game("TipeoNada", SCREEN_WIDTH, SCREEN_HEIGHT);
 
   while (game->running()) {
     game->handleEvents();
-    game->update();
+    SDL_AddTimer(3000, &Game::showWord, game);
     game->render();
   }
   return 0;
