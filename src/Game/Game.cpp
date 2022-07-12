@@ -112,7 +112,6 @@ Uint32 Game::showWord(Uint32 interval, void *param) {
   if (randomX > 1100 && randomWord.size() > 5) {
     randomX -= 300;
   }
-  cout << randomX << " " << SCREEN_WIDTH << " " << randomWord << endl;
 
   pair<int, int> position = make_pair(randomX, 0);
 
