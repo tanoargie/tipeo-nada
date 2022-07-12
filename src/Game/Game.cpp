@@ -1,5 +1,4 @@
 #include "Game.hpp"
-#include "../constants.cpp"
 #include "SDL_events.h"
 #include "SDL_keycode.h"
 #include "SDL_render.h"
@@ -7,13 +6,13 @@
 #include "SDL_ttf.h"
 #include <utility>
 
-Game::Game(const char *title, int width, int height) {
+Game::Game(const char *title) {
   if (SDL_Init(SDL_INIT_EVERYTHING) == 0 && IMG_Init(IMG_INIT_PNG) &&
       TTF_Init() == 0) {
     cout << "Initialized!" << endl;
     window = SDL_CreateWindow("TipeoNada", SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, width, height,
-                              SDL_WINDOW_OPENGL);
+                              SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
+                              SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
 
     if (!window) {
       printf("Could not create window: %s\n", SDL_GetError());

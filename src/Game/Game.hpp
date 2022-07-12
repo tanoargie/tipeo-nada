@@ -23,7 +23,7 @@ using namespace std;
 class Game {
 
 public:
-  Game(const char *title, int width, int height);
+  Game(const char *title);
   ~Game();
 
   void handleEvents();
