@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "../Player/Player.hpp"
+#include "../constants.cpp"
 
 using namespace std;
 
@@ -32,6 +33,7 @@ public:
   static Uint32 updateWordsLocation(Uint32 interval, void *param);
 
   bool running();
+  bool canAddWord();
 
 private:
   SDL_Renderer *renderer;
@@ -43,6 +45,7 @@ private:
   vector<string> words;
   map<string, pair<int, int>> *wordsOnScreen;
   bool isRunning;
+  difficultyEnum difficulty;
   Player player;
 };
 

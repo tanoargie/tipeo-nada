@@ -103,6 +103,17 @@ Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
   return interval;
 }
 
+bool Game::canAddWord() {
+  if (difficulty == EASY && wordsOnScreen->size() < 5) {
+    return true;
+  } else if (difficulty == MEDIUM && wordsOnScreen->size() < 10) {
+    return true;
+  } else if (difficulty == HARD && wordsOnScreen->size() < 20) {
+    return true;
+  }
+  return false;
+}
+
 Uint32 Game::showWord(Uint32 interval, void *param) {
   Game *game = reinterpret_cast<Game *>(param);
   int random = rand() % game->words.size();
@@ -115,8 +126,10 @@ Uint32 Game::showWord(Uint32 interval, void *param) {
 
   pair<int, int> position = make_pair(randomX, 0);
 
-  game->wordsOnScreen->insert(
-      pair<string, pair<int, int>>(randomWord, position));
+  if (game->canAddWord()) {
+    game->wordsOnScreen->insert(
+        pair<string, pair<int, int>>(randomWord, position));
+  }
 
   return interval;
 }
