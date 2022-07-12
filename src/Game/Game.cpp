@@ -106,12 +106,13 @@ Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
 Uint32 Game::showWord(Uint32 interval, void *param) {
   Game *game = reinterpret_cast<Game *>(param);
   int random = rand() % game->words.size();
-  int randomX = rand() % SCREEN_WIDTH;
+  int randomX = rand() % (SCREEN_WIDTH - 100);
 
   string randomWord = game->words.at(random);
-  if (randomX > 1100 && randomWord.size() > 20) {
-    randomX -= 500;
+  if (randomX > 1100 && randomWord.size() > 5) {
+    randomX -= 300;
   }
+  cout << randomX << " " << SCREEN_WIDTH << " " << randomWord << endl;
 
   pair<int, int> position = make_pair(randomX, 0);
 
