@@ -12,11 +12,15 @@ int main(int argc, char *argv[]) {
   if (SDL_Init(SDL_INIT_TIMER) < 0) {
     cout << SDL_GetError();
   }
-  Uint32 timerId = SDL_AddTimer(3000, &Game::showWord, game);
+  Uint32 timerIdShowWord = SDL_AddTimer(3000, &Game::showWord, game);
+  Uint32 timerIdUpdateWordsLocation =
+      SDL_AddTimer(1000, &Game::updateWordsLocation, game);
+
   while (game->running()) {
     game->handleEvents();
-    /* game->render(); */
   }
-  SDL_RemoveTimer(timerId);
+
+  SDL_RemoveTimer(timerIdShowWord);
+  SDL_RemoveTimer(timerIdUpdateWordsLocation);
   return 0;
 }

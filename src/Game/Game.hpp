@@ -9,8 +9,10 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <string>
 #include <time.h>
+#include <utility>
 #include <vector>
 
 #include "../Player/Player.hpp"
@@ -27,6 +29,7 @@ public:
   void render();
   void draw();
   static Uint32 showWord(Uint32 interval, void *param);
+  static Uint32 updateWordsLocation(Uint32 interval, void *param);
 
   bool running();
 
@@ -38,6 +41,7 @@ private:
   SDL_Color fontColor;
   TTF_Font *font;
   vector<string> words;
+  map<string, pair<int, int>> *wordsOnScreen;
   bool isRunning;
   Player player;
 };

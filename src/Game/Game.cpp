@@ -5,6 +5,7 @@
 #include "SDL_render.h"
 #include "SDL_timer.h"
 #include "SDL_ttf.h"
+#include <utility>
 
 Game::Game(const char *title, int width, int height) {
   if (SDL_Init(SDL_INIT_EVERYTHING) == 0 && IMG_Init(IMG_INIT_PNG) &&
@@ -21,6 +22,7 @@ Game::Game(const char *title, int width, int height) {
     }
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    wordsOnScreen = new map<string, pair<int, int>>();
 
     if (!renderer) {
       printf("Could not create renderer: %s\n", SDL_GetError());
@@ -55,6 +57,8 @@ Game::Game(const char *title, int width, int height) {
 }
 
 Game::~Game() {
+  wordsOnScreen = NULL;
+  delete wordsOnScreen;
   SDL_FreeSurface(backgroundImage);
   SDL_DestroyTexture(backgroundTex);
   SDL_DestroyRenderer(renderer);
@@ -64,37 +68,55 @@ Game::~Game() {
   SDL_Quit();
 }
 
+Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
+  Game *game = reinterpret_cast<Game *>(param);
+  map<string, pair<int, int>>::iterator it;
+  SDL_RenderClear(game->renderer);
+  for (it = game->wordsOnScreen->begin(); it != game->wordsOnScreen->end();
+       it++) {
+
+    SDL_Surface *surfaceMessage =
+        TTF_RenderUTF8_Blended(game->font, it->first.c_str(), game->fontColor);
+
+    SDL_Texture *message =
+        SDL_CreateTextureFromSurface(game->renderer, surfaceMessage);
+
+    SDL_Rect dst;
+
+    dst.x = it->second.first;
+    dst.y = it->second.second;
+
+    pair<int, int> newPosition =
+        make_pair(it->second.first, it->second.second + 30);
+
+    game->wordsOnScreen->operator[](it->first) = newPosition;
+
+    TTF_SizeUTF8(game->font, it->first.c_str(), &dst.w, &dst.h);
+
+    SDL_RenderCopy(game->renderer, message, NULL, &dst);
+
+    SDL_FreeSurface(surfaceMessage);
+    SDL_DestroyTexture(message);
+  }
+  SDL_RenderPresent(game->renderer);
+
+  return interval;
+}
+
 Uint32 Game::showWord(Uint32 interval, void *param) {
   Game *game = reinterpret_cast<Game *>(param);
-  SDL_RenderClear(game->renderer);
   int random = rand() % game->words.size();
   int randomX = rand() % SCREEN_WIDTH;
 
   string randomWord = game->words.at(random);
   if (randomX > 1100 && randomWord.size() > 20) {
-    randomX -= 300;
+    randomX -= 500;
   }
 
-  SDL_Surface *surfaceMessage =
-      TTF_RenderUTF8_Blended(game->font, randomWord.c_str(), game->fontColor);
+  pair<int, int> position = make_pair(randomX, 0);
 
-  SDL_Texture *message =
-      SDL_CreateTextureFromSurface(game->renderer, surfaceMessage);
-
-  SDL_Rect dst;
-
-  dst.x = randomX;
-  dst.y = 0;
-
-  TTF_SizeUTF8(game->font, randomWord.c_str(), &dst.w, &dst.h);
-
-  SDL_RenderFillRect(game->renderer, &dst);
-
-  SDL_RenderCopy(game->renderer, message, NULL, &dst);
-  SDL_RenderPresent(game->renderer);
-
-  SDL_FreeSurface(surfaceMessage);
-  SDL_DestroyTexture(message);
+  game->wordsOnScreen->insert(
+      pair<string, pair<int, int>>(randomWord, position));
 
   return interval;
 }
