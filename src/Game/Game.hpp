@@ -6,9 +6,11 @@
 #include <SDL_image.h>
 #include <SDL_keycode.h>
 #include <SDL_ttf.h>
+#include <cctype>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <locale>
 #include <map>
 #include <string>
 #include <time.h>
@@ -29,6 +31,8 @@ public:
   void handleEvents();
   void render();
   void draw();
+  void removeWord();
+  bool isWordTypingOnScreen();
   static Uint32 showWord(Uint32 interval, void *param);
   static Uint32 updateWordsLocation(Uint32 interval, void *param);
 
@@ -46,6 +50,7 @@ private:
   map<string, pair<int, int>> *wordsOnScreen;
   bool isRunning;
   difficultyEnum difficulty;
+  string wordTyping;
   Player player;
 };
 

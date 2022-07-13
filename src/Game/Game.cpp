@@ -1,10 +1,10 @@
 #include "Game.hpp"
 #include "SDL_events.h"
+#include "SDL_keyboard.h"
 #include "SDL_keycode.h"
 #include "SDL_render.h"
 #include "SDL_timer.h"
 #include "SDL_ttf.h"
-#include <utility>
 
 Game::Game(const char *title) {
   if (SDL_Init(SDL_INIT_EVERYTHING) == 0 && IMG_Init(IMG_INIT_PNG) &&
@@ -133,6 +133,15 @@ Uint32 Game::showWord(Uint32 interval, void *param) {
   return interval;
 }
 
+void Game::removeWord() { wordsOnScreen->erase(wordTyping); }
+
+bool Game::isWordTypingOnScreen() {
+  if (wordsOnScreen->find(wordTyping) != wordsOnScreen->end()) {
+    return true;
+  }
+  return false;
+}
+
 void Game::handleEvents() {
   SDL_Event event;
   SDL_PollEvent(&event);
@@ -142,6 +151,13 @@ void Game::handleEvents() {
     break;
   case SDL_KEYDOWN:
     if (event.key.keysym.sym == SDLK_RETURN) {
+      if (isWordTypingOnScreen()) {
+        removeWord();
+      }
+      wordTyping.clear();
+    } else {
+      const char *newChar = SDL_GetKeyName(event.key.keysym.sym);
+      wordTyping += tolower(*newChar);
     }
     break;
   default:
