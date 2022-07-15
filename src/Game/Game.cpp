@@ -13,7 +13,6 @@ Game::Game(const char *title) {
     window = SDL_CreateWindow("TipeoNada", SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
                               SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
-
     if (!window) {
       printf("Could not create window: %s\n", SDL_GetError());
       isRunning = false;
@@ -155,12 +154,11 @@ void Game::handleEvents() {
         removeWord();
       }
       wordTyping.clear();
-    } else {
-      const char *newChar = SDL_GetKeyName(event.key.keysym.sym);
-      wordTyping += tolower(*newChar);
     }
     break;
-  default:
+  case SDL_TEXTINPUT:
+    auto newChar = event.text.text;
+    wordTyping.append(newChar);
     break;
   }
 }
