@@ -135,6 +135,7 @@ Uint32 Game::showWord(Uint32 interval, void *param) {
 void Game::removeWord() { wordsOnScreen->erase(wordTyping); }
 
 bool Game::isWordTypingOnScreen() {
+  cout << wordTyping << endl;
   if (wordsOnScreen->find(wordTyping) != wordsOnScreen->end()) {
     return true;
   }
@@ -149,6 +150,9 @@ void Game::handleEvents() {
     isRunning = false;
     break;
   case SDL_KEYDOWN:
+    if (event.key.keysym.sym == SDLK_BACKSPACE) {
+      wordTyping.pop_back();
+    }
     if (event.key.keysym.sym == SDLK_RETURN) {
       if (isWordTypingOnScreen()) {
         removeWord();
