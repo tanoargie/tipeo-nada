@@ -135,7 +135,6 @@ Uint32 Game::showWord(Uint32 interval, void *param) {
 void Game::removeWord() { wordsOnScreen->erase(wordTyping); }
 
 bool Game::isWordTypingOnScreen() {
-  cout << wordTyping << endl;
   if (wordsOnScreen->find(wordTyping) != wordsOnScreen->end()) {
     return true;
   }
