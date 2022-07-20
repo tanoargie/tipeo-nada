@@ -1,22 +1,22 @@
 #ifndef Game_hpp
 #define Game_hpp
 
-#include "SDL_events.h"
 #include <SDL.h>
+#include <SDL_events.h>
 #include <SDL_image.h>
+#include <SDL_keyboard.h>
 #include <SDL_keycode.h>
+#include <SDL_render.h>
 #include <SDL_ttf.h>
-#include <cctype>
-#include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <locale>
 #include <map>
 #include <string>
 #include <time.h>
 #include <utility>
 #include <vector>
 
+#include "../Button/Button.hpp"
 #include "../Player/Player.hpp"
 #include "../constants.cpp"
 
@@ -30,6 +30,7 @@ public:
 
   void handleEvents();
   void render();
+  void renderClear();
   void draw();
   void removeWord();
   bool isWordTypingOnScreen();
@@ -38,20 +39,24 @@ public:
 
   bool running();
   bool canAddWord();
+  void changeDifficulty(difficultyEnum diff) { difficulty = diff; }
+  difficultyEnum getDifficulty() { return difficulty; }
+  void addButton(const char *text, function<void()> *fn, SDL_Rect *dst);
 
 private:
   SDL_Renderer *renderer;
   SDL_Window *window;
   SDL_Surface *backgroundImage;
   SDL_Texture *backgroundTex;
+  vector<string> words;
+  difficultyEnum difficulty = NOT_SET;
   SDL_Color fontColor;
   TTF_Font *font;
-  vector<string> words;
   map<string, pair<int, int>> *wordsOnScreen;
   bool isRunning;
-  difficultyEnum difficulty;
   string wordTyping;
   Player player;
+  vector<Button *> gameButtons;
 };
 
 #endif

@@ -1,10 +1,5 @@
 #include "Game.hpp"
-#include "SDL_events.h"
-#include "SDL_keyboard.h"
-#include "SDL_keycode.h"
-#include "SDL_render.h"
-#include "SDL_timer.h"
-#include "SDL_ttf.h"
+#include "../Button/Button.hpp"
 
 Game::Game(const char *title) {
   if (SDL_Init(SDL_INIT_EVERYTHING) == 0 && IMG_Init(IMG_INIT_PNG) &&
@@ -48,6 +43,25 @@ Game::Game(const char *title) {
     }
     wordfile.close();
 
+    const char *easyMessage = "Easy";
+    /* const char *mediumMessage = "Medium"; */
+    /* const char *hardMessage = "Hard"; */
+    SDL_Rect dstEasy;
+    SDL_Rect dstMedium;
+    SDL_Rect dstHard;
+
+    int easyYPos = SCREEN_HEIGHT / 4;
+
+    dstEasy.x = SCREEN_WIDTH / 2;
+    dstEasy.y = easyYPos;
+    dstMedium.x = SCREEN_WIDTH / 2;
+    dstMedium.y = easyYPos + 50;
+    dstHard.x = SCREEN_WIDTH / 2;
+    dstHard.y = easyYPos + 100;
+
+    /* Button medium(mediumMessage, fontColor, font, &dstMedium, renderer); */
+    /* Button hard(hardMessage, fontColor, font, &dstHard, renderer); */
+
     isRunning = true;
   } else {
     isRunning = false;
@@ -55,6 +69,9 @@ Game::Game(const char *title) {
 }
 
 Game::~Game() {
+  for (int i = 0; i < gameButtons.size(); i++) {
+    delete gameButtons[i];
+  }
   wordsOnScreen = NULL;
   delete wordsOnScreen;
   SDL_FreeSurface(backgroundImage);
@@ -149,7 +166,7 @@ void Game::handleEvents() {
     isRunning = false;
     break;
   case SDL_KEYDOWN:
-    if (event.key.keysym.sym == SDLK_BACKSPACE) {
+    if (event.key.keysym.sym == SDLK_BACKSPACE && wordTyping.size() > 0) {
       wordTyping.pop_back();
     }
     if (event.key.keysym.sym == SDLK_RETURN) {
@@ -164,8 +181,19 @@ void Game::handleEvents() {
     wordTyping.append(newChar);
     break;
   }
+  for (int i = 0; i < gameButtons.size(); i++) {
+    gameButtons[i]->handleEvents(event);
+  }
 }
 
 void Game::render() { SDL_RenderPresent(renderer); }
+
+void Game::renderClear() { SDL_RenderClear(renderer); }
+
+void Game::addButton(const char *text, function<void()> *fn, SDL_Rect *dst) {
+  Button *button = new Button(text, fontColor, font, dst, renderer, fn);
+  /* (*fn)(); */
+  gameButtons.push_back(button);
+}
 
 bool Game::running() { return isRunning; }
