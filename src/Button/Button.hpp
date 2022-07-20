@@ -2,6 +2,7 @@
 #define Button_hpp
 
 #include "../constants.cpp"
+#include "SDL_mouse.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mouse.h>
@@ -17,7 +18,7 @@ class Button {
 public:
   Button(const char *text, SDL_Color fontColor, TTF_Font *font, SDL_Rect *dst,
          SDL_Renderer *renderer, function<void()> *fn)
-      : font(font), fontColor(fontColor) {
+      : font(font), fontColor(fontColor), dst(dst) {
 
     callback = new function<void()>;
     *callback = *fn;
@@ -32,10 +33,23 @@ public:
   void handleEvents(SDL_Event event) {
     switch (event.type) {
     case SDL_MOUSEBUTTONDOWN:
-      (*callback)();
+      if (mouseInsideDiv()) {
+        (*callback)();
+      }
       break;
     }
   };
+
+  bool mouseInsideDiv() {
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+
+    if (x > dst->x && x < dst->x + dst->w && y > dst->y &&
+        y < dst->y + dst->h) {
+      return true;
+    }
+    return false;
+  }
 
   ~Button() {
     delete callback;

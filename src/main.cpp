@@ -43,10 +43,16 @@ int main(int argc, char *argv[]) {
 
   dstEasy.x = SCREEN_WIDTH / 2;
   dstEasy.y = easyYPos;
+  dstEasy.h = 100;
+  dstEasy.w = 100;
   dstMedium.x = SCREEN_WIDTH / 2;
   dstMedium.y = easyYPos + 50;
+  dstMedium.h = 100;
+  dstMedium.w = 100;
   dstHard.x = SCREEN_WIDTH / 2;
   dstHard.y = easyYPos + 100;
+  dstHard.w = 100;
+  dstHard.h = 100;
 
   game->renderClear();
   game->addButton(easyMessage, &diffEasyFn, &dstEasy);
