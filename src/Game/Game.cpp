@@ -54,10 +54,6 @@ Game::Game(const char *title) {
 
     dstEasy.x = SCREEN_WIDTH / 2;
     dstEasy.y = easyYPos;
-    dstMedium.x = SCREEN_WIDTH / 2;
-    dstMedium.y = easyYPos + 50;
-    dstHard.x = SCREEN_WIDTH / 2;
-    dstHard.y = easyYPos + 100;
 
     /* Button medium(mediumMessage, fontColor, font, &dstMedium, renderer); */
     /* Button hard(hardMessage, fontColor, font, &dstHard, renderer); */
@@ -192,7 +188,6 @@ void Game::renderClear() { SDL_RenderClear(renderer); }
 
 void Game::addButton(const char *text, function<void()> *fn, SDL_Rect *dst) {
   Button *button = new Button(text, fontColor, font, dst, renderer, fn);
-  /* (*fn)(); */
   gameButtons.push_back(button);
 }
 

@@ -21,15 +21,12 @@ public:
 
     callback = new function<void()>;
     *callback = *fn;
-    SDL_RenderClear(renderer);
 
     TTF_SizeUTF8(font, text, &(dst->w), &(dst->h));
     surface = TTF_RenderUTF8_Blended(font, text, fontColor);
     texture = SDL_CreateTextureFromSurface(renderer, surface);
 
     SDL_RenderCopy(renderer, texture, NULL, dst);
-
-    SDL_RenderPresent(renderer);
   };
 
   void handleEvents(SDL_Event event) {

@@ -13,27 +13,46 @@ int main(int argc, char *argv[]) {
   }
 
   function<void(difficultyEnum)> changeGameDiff = [&game](difficultyEnum diff) {
+    cout << diff << endl;
     game->changeDifficulty(diff);
-    game->renderClear();
-    game->render();
   };
 
   difficultyEnum diffEasy = EASY;
+  difficultyEnum diffMedium = MEDIUM;
+  difficultyEnum diffHard = HARD;
 
   function<void()> diffEasyFn = [diffEasy, &changeGameDiff]() {
     changeGameDiff(diffEasy);
   };
+  function<void()> diffMediumFn = [diffMedium, &changeGameDiff]() {
+    changeGameDiff(diffMedium);
+  };
+  function<void()> diffHardFn = [diffHard, &changeGameDiff]() {
+    changeGameDiff(diffHard);
+  };
 
   const char *easyMessage = "Easy";
+  const char *mediumMessage = "Medium";
+  const char *hardMessage = "Hard";
 
   SDL_Rect dstEasy;
+  SDL_Rect dstMedium;
+  SDL_Rect dstHard;
 
   int easyYPos = SCREEN_HEIGHT / 4;
 
   dstEasy.x = SCREEN_WIDTH / 2;
   dstEasy.y = easyYPos;
+  dstMedium.x = SCREEN_WIDTH / 2;
+  dstMedium.y = easyYPos + 50;
+  dstHard.x = SCREEN_WIDTH / 2;
+  dstHard.y = easyYPos + 100;
 
+  game->renderClear();
   game->addButton(easyMessage, &diffEasyFn, &dstEasy);
+  game->addButton(mediumMessage, &diffMediumFn, &dstMedium);
+  game->addButton(hardMessage, &diffHardFn, &dstHard);
+  game->render();
 
   Uint32 timerIdShowWord;
   Uint32 timerIdUpdateWordsLocation;
