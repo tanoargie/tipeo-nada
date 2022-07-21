@@ -1,7 +1,6 @@
 #ifndef Button_hpp
 #define Button_hpp
 
-#include "../constants.cpp"
 #include "SDL_mouse.h"
 #include <SDL.h>
 #include <SDL_image.h>

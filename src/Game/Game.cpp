@@ -1,5 +1,4 @@
 #include "Game.hpp"
-#include "../Button/Button.hpp"
 
 Game::Game(const char *title) {
   if (SDL_Init(SDL_INIT_EVERYTHING) == 0 && IMG_Init(IMG_INIT_PNG) &&

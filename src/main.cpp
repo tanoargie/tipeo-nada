@@ -52,9 +52,9 @@ int main(int argc, char *argv[]) {
   dstHard.h = 100;
 
   game->renderClear();
-  game->addButton(easyMessage, &diffEasyFn, &dstEasy);
-  game->addButton(mediumMessage, &diffMediumFn, &dstMedium);
-  game->addButton(hardMessage, &diffHardFn, &dstHard);
+  game->addButton(getDifficultyChar(diffEasy), &diffEasyFn, &dstEasy);
+  game->addButton(getDifficultyChar(diffMedium), &diffMediumFn, &dstMedium);
+  game->addButton(getDifficultyChar(diffHard), &diffHardFn, &dstHard);
   game->render();
 
   Uint32 timerIdShowWord;
