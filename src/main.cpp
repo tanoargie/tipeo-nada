@@ -13,8 +13,7 @@ int main(int argc, char *argv[]) {
   }
 
   function<void(difficultyEnum)> changeGameDiff = [&game](difficultyEnum diff) {
-    cout << diff << endl;
-    game->changeDifficulty(diff);
+    game->difficulty = diff;
   };
 
   difficultyEnum diffEasy = EASY;
@@ -35,9 +34,7 @@ int main(int argc, char *argv[]) {
   const char *mediumMessage = "Medium";
   const char *hardMessage = "Hard";
 
-  SDL_Rect dstEasy;
-  SDL_Rect dstMedium;
-  SDL_Rect dstHard;
+  SDL_Rect dstEasy, dstMedium, dstHard;
 
   int easyYPos = SCREEN_HEIGHT / 4;
 
@@ -67,11 +64,11 @@ int main(int argc, char *argv[]) {
   while (game->running()) {
     game->handleEvents();
 
-    if (game->getDifficulty() != NOT_SET) {
+    if (game->difficulty != NOT_SET) {
       // ya eligió dificultad
 
       if (!setTimer) {
-        Uint32 timerIdShowWord = SDL_AddTimer(3000, &Game::showWord, game);
+        Uint32 timerIdShowWord = SDL_AddTimer(2000, &Game::showWord, game);
         Uint32 timerIdUpdateWordsLocation =
             SDL_AddTimer(1000, &Game::updateWordsLocation, game);
         setTimer = true;

@@ -28,6 +28,8 @@ public:
   Game(const char *title);
   ~Game();
 
+  difficultyEnum difficulty = NOT_SET;
+
   void handleEvents();
   void render();
   void renderClear();
@@ -39,8 +41,6 @@ public:
 
   bool running();
   bool canAddWord();
-  void changeDifficulty(difficultyEnum diff) { difficulty = diff; }
-  difficultyEnum getDifficulty() { return difficulty; }
   void addButton(const char *text, function<void()> *fn, SDL_Rect *dst);
 
 private:
@@ -49,7 +49,6 @@ private:
   SDL_Surface *backgroundImage;
   SDL_Texture *backgroundTex;
   vector<string> words;
-  difficultyEnum difficulty = NOT_SET;
   SDL_Color fontColor;
   TTF_Font *font;
   map<string, pair<int, int>> *wordsOnScreen;

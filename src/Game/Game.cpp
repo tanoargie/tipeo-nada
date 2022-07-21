@@ -8,6 +8,7 @@ Game::Game(const char *title) {
     window = SDL_CreateWindow("TipeoNada", SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
                               SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
+
     if (!window) {
       printf("Could not create window: %s\n", SDL_GetError());
       isRunning = false;
@@ -42,21 +43,6 @@ Game::Game(const char *title) {
       words.push_back(line);
     }
     wordfile.close();
-
-    const char *easyMessage = "Easy";
-    /* const char *mediumMessage = "Medium"; */
-    /* const char *hardMessage = "Hard"; */
-    SDL_Rect dstEasy;
-    SDL_Rect dstMedium;
-    SDL_Rect dstHard;
-
-    int easyYPos = SCREEN_HEIGHT / 4;
-
-    dstEasy.x = SCREEN_WIDTH / 2;
-    dstEasy.y = easyYPos;
-
-    /* Button medium(mediumMessage, fontColor, font, &dstMedium, renderer); */
-    /* Button hard(hardMessage, fontColor, font, &dstHard, renderer); */
 
     isRunning = true;
   } else {
