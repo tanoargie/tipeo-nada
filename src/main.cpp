@@ -30,10 +30,6 @@ int main(int argc, char *argv[]) {
     changeGameDiff(diffHard);
   };
 
-  const char *easyMessage = "Easy";
-  const char *mediumMessage = "Medium";
-  const char *hardMessage = "Hard";
-
   SDL_Rect dstEasy, dstMedium, dstHard;
 
   int easyYPos = SCREEN_HEIGHT / 4;
@@ -68,9 +64,9 @@ int main(int argc, char *argv[]) {
       // ya eligió dificultad
 
       if (!setTimer) {
-        Uint32 timerIdShowWord = SDL_AddTimer(2000, &Game::showWord, game);
+        Uint32 timerIdShowWord = SDL_AddTimer(1000, &Game::showWord, game);
         Uint32 timerIdUpdateWordsLocation =
-            SDL_AddTimer(1000, &Game::updateWordsLocation, game);
+            SDL_AddTimer(500, &Game::updateWordsLocation, game);
         setTimer = true;
       }
     }
