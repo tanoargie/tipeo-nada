@@ -12,22 +12,20 @@ int main(int argc, char *argv[]) {
     cout << SDL_GetError();
   }
 
-  function<void(difficultyEnum)> changeGameDiff = [&game](difficultyEnum diff) {
-    game->difficulty = diff;
-  };
-
   difficultyEnum diffEasy = EASY;
   difficultyEnum diffMedium = MEDIUM;
   difficultyEnum diffHard = HARD;
 
-  function<void()> diffEasyFn = [diffEasy, &changeGameDiff]() {
-    changeGameDiff(diffEasy);
+  function<void()> diffEasyFn = [&game, diffEasy]() {
+    game->difficulty = diffEasy;
   };
-  function<void()> diffMediumFn = [diffMedium, &changeGameDiff]() {
-    changeGameDiff(diffMedium);
+
+  function<void()> diffMediumFn = [&game, diffMedium]() {
+    game->difficulty = diffMedium;
   };
-  function<void()> diffHardFn = [diffHard, &changeGameDiff]() {
-    changeGameDiff(diffHard);
+
+  function<void()> diffHardFn = [&game, diffHard]() {
+    game->difficulty = diffHard;
   };
 
   SDL_Rect dstEasy, dstMedium, dstHard;
