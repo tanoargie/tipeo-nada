@@ -60,9 +60,15 @@ int main(int argc, char *argv[]) {
       // ya eligió dificultad
 
       if (!setTimer) {
-        Uint32 timerIdShowWord = SDL_AddTimer(1000, &Game::showWord, game);
+        if (game->difficulty == EASY) {
+          Uint32 timerIdShowWord = SDL_AddTimer(1500, &Game::showWord, game);
+        } else if (game->difficulty == MEDIUM) {
+          Uint32 timerIdShowWord = SDL_AddTimer(1000, &Game::showWord, game);
+        } else if (game->difficulty == HARD) {
+          Uint32 timerIdShowWord = SDL_AddTimer(500, &Game::showWord, game);
+        }
         Uint32 timerIdUpdateWordsLocation =
-            SDL_AddTimer(500, &Game::updateWordsLocation, game);
+            SDL_AddTimer(250, &Game::updateWordsLocation, game);
         setTimer = true;
       }
     }

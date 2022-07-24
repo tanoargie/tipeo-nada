@@ -85,7 +85,7 @@ Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
 
     SDL_GetWindowSize(game->window, &windowWidth, &windowHeight);
 
-    if (it->second.second + 30 > windowHeight) {
+    if (it->second.second + 15 > windowHeight) {
       game->wordsOnScreen->erase(it++);
 
       game->player->loseLife(1);
@@ -101,7 +101,7 @@ Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
           SDL_CreateTextureFromSurface(game->renderer, surfaceMessage);
 
       pair<int, int> newPosition =
-          make_pair(it->second.first, it->second.second + 30);
+          make_pair(it->second.first, it->second.second + 15);
 
       game->wordsOnScreen->operator[](it->first) = newPosition;
 
@@ -121,11 +121,11 @@ Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
 }
 
 bool Game::canAddWord() {
-  if (difficulty == EASY && wordsOnScreen->size() < 5) {
+  if (difficulty == EASY && wordsOnScreen->size() < 10) {
     return true;
-  } else if (difficulty == MEDIUM && wordsOnScreen->size() < 10) {
+  } else if (difficulty == MEDIUM && wordsOnScreen->size() < 20) {
     return true;
-  } else if (difficulty == HARD && wordsOnScreen->size() < 20) {
+  } else if (difficulty == HARD && wordsOnScreen->size() < 30) {
     return true;
   }
   return false;
