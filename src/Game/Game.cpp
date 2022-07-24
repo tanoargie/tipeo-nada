@@ -18,6 +18,8 @@ Game::Game(const char *title) {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     wordsOnScreen = new map<string, pair<int, int>>();
 
+    player = new Player();
+
     if (!renderer) {
       printf("Could not create renderer: %s\n", SDL_GetError());
       isRunning = false;
@@ -54,8 +56,10 @@ Game::~Game() {
   for (int i = 0; i < gameButtons.size(); i++) {
     delete gameButtons[i];
   }
-  wordsOnScreen = NULL;
   delete wordsOnScreen;
+  wordsOnScreen = NULL;
+  delete player;
+  player = NULL;
   SDL_FreeSurface(backgroundImage);
   SDL_DestroyTexture(backgroundTex);
   SDL_DestroyRenderer(renderer);
@@ -83,6 +87,12 @@ Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
 
     if (it->second.second + 30 > windowHeight) {
       game->wordsOnScreen->erase(it++);
+
+      game->player->loseLife(1);
+
+      if (game->player->health == 0) {
+        game->isRunning = false;
+      }
     } else {
       SDL_Surface *surfaceMessage = TTF_RenderUTF8_Blended(
           game->font, it->first.c_str(), game->fontColor);

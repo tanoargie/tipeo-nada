@@ -55,7 +55,7 @@ private:
   map<string, pair<int, int>> *wordsOnScreen;
   bool isRunning;
   string wordTyping;
-  Player player;
+  Player *player;
   vector<Button *> gameButtons;
 };
 

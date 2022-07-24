@@ -4,12 +4,10 @@
 class Player {
 public:
   Player();
-  void setHealth(int h) { health = h; }
-  void setMaxHealth(int h) { maxHealth = h; }
-  int getHealth() const { return health; }
-  int getMaxHealth() const { return maxHealth; }
 
-private:
-  int health, maxHealth;
+  int health = 5;
+
+  void loseLife(int lostLife);
+  void resetLifes();
 };
 #endif
