@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include "SDL_video.h"
 
 Game::Game(const char *title) {
   if (SDL_Init(SDL_INIT_EVERYTHING) == 0 && IMG_Init(IMG_INIT_PNG) &&
@@ -66,33 +67,43 @@ Game::~Game() {
 
 Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
   Game *game = reinterpret_cast<Game *>(param);
-  map<string, pair<int, int>>::iterator it;
+  map<string, pair<int, int>>::const_iterator it =
+      game->wordsOnScreen->cbegin();
   SDL_RenderClear(game->renderer);
-  for (it = game->wordsOnScreen->begin(); it != game->wordsOnScreen->end();
-       it++) {
-
-    SDL_Surface *surfaceMessage =
-        TTF_RenderUTF8_Blended(game->font, it->first.c_str(), game->fontColor);
-
-    SDL_Texture *message =
-        SDL_CreateTextureFromSurface(game->renderer, surfaceMessage);
-
+  while (it != game->wordsOnScreen->cend()) {
     SDL_Rect dst;
 
     dst.x = it->second.first;
     dst.y = it->second.second;
 
-    pair<int, int> newPosition =
-        make_pair(it->second.first, it->second.second + 30);
+    int windowHeight;
+    int windowWidth;
 
-    game->wordsOnScreen->operator[](it->first) = newPosition;
+    SDL_GetWindowSize(game->window, &windowWidth, &windowHeight);
 
-    TTF_SizeUTF8(game->font, it->first.c_str(), &dst.w, &dst.h);
+    if (it->second.second + 30 > windowHeight) {
+      game->wordsOnScreen->erase(it++);
+    } else {
+      SDL_Surface *surfaceMessage = TTF_RenderUTF8_Blended(
+          game->font, it->first.c_str(), game->fontColor);
 
-    SDL_RenderCopy(game->renderer, message, NULL, &dst);
+      SDL_Texture *message =
+          SDL_CreateTextureFromSurface(game->renderer, surfaceMessage);
 
-    SDL_FreeSurface(surfaceMessage);
-    SDL_DestroyTexture(message);
+      pair<int, int> newPosition =
+          make_pair(it->second.first, it->second.second + 30);
+
+      game->wordsOnScreen->operator[](it->first) = newPosition;
+
+      TTF_SizeUTF8(game->font, it->first.c_str(), &dst.w, &dst.h);
+
+      SDL_RenderCopy(game->renderer, message, NULL, &dst);
+
+      SDL_FreeSurface(surfaceMessage);
+      SDL_DestroyTexture(message);
+
+      it++;
+    }
   }
   SDL_RenderPresent(game->renderer);
 
