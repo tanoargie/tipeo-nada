@@ -30,6 +30,9 @@ public:
 
   difficultyEnum difficulty = NOT_SET;
 
+  SDL_Color fontColor;
+  TTF_Font *font;
+
   void handleEvents();
   void render();
   void renderClear();
@@ -49,8 +52,6 @@ private:
   SDL_Surface *backgroundImage;
   SDL_Texture *backgroundTex;
   vector<string> words;
-  SDL_Color fontColor;
-  TTF_Font *font;
   map<string, pair<int, int>> *wordsOnScreen;
   bool isRunning;
   string wordTyping;

@@ -34,16 +34,14 @@ int main(int argc, char *argv[]) {
 
   dstEasy.x = SCREEN_WIDTH / 2;
   dstEasy.y = easyYPos;
-  dstEasy.h = 100;
-  dstEasy.w = 100;
+  TTF_SizeUTF8(game->font, getDifficultyChar(diffEasy), &dstEasy.w, &dstEasy.h);
   dstMedium.x = SCREEN_WIDTH / 2;
   dstMedium.y = easyYPos + 50;
-  dstMedium.h = 100;
-  dstMedium.w = 100;
+  TTF_SizeUTF8(game->font, getDifficultyChar(diffMedium), &dstMedium.w,
+               &dstMedium.h);
   dstHard.x = SCREEN_WIDTH / 2;
   dstHard.y = easyYPos + 100;
-  dstHard.w = 100;
-  dstHard.h = 100;
+  TTF_SizeUTF8(game->font, getDifficultyChar(diffHard), &dstHard.w, &dstHard.h);
 
   game->renderClear();
   game->addButton(getDifficultyChar(diffEasy), &diffEasyFn, &dstEasy);
