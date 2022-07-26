@@ -1,9 +1,8 @@
 #include "Game.hpp"
-#include "SDL_video.h"
 
 Game::Game(const char *title) {
   if (SDL_Init(SDL_INIT_EVERYTHING) == 0 && IMG_Init(IMG_INIT_PNG) &&
-      TTF_Init() == 0) {
+      TTF_Init() == 0 && Mix_Init(MIX_INIT_MP3) != 0) {
     cout << "Initialized!" << endl;
     window = SDL_CreateWindow("TipeoNada", SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
@@ -18,6 +17,21 @@ Game::Game(const char *title) {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     wordsOnScreen = new map<string, pair<int, int>>();
 
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+      printf("Error opening music: %s\n", Mix_GetError());
+    } else {
+      backgroundMusic = Mix_LoadMUS("src/Assets/cyberpunk.mp3");
+      Mix_VolumeMusic((20 * MIX_MAX_VOLUME) / 100);
+
+      if (!backgroundMusic) {
+        printf("Error loading music: %s\n", Mix_GetError());
+      }
+
+      if (Mix_PlayMusic(backgroundMusic, -1) < 0) {
+        printf("Error playing music: %s\n", Mix_GetError());
+      }
+    }
+
     player = new Player();
 
     if (!renderer) {
@@ -26,7 +40,7 @@ Game::Game(const char *title) {
       return;
     }
 
-    font = TTF_OpenFont("OpenSans-Bold.ttf", 24);
+    font = TTF_OpenFont("src/Assets/OpenSans-Bold.ttf", 24);
     if (font == NULL) {
       cout << SDL_GetError();
     }
@@ -38,7 +52,7 @@ Game::Game(const char *title) {
 
     srand(time(0));
 
-    ifstream wordfile("words.txt");
+    ifstream wordfile("src/Assets/words.txt");
     string line;
 
     while (getline(wordfile, line)) {
@@ -64,6 +78,7 @@ Game::~Game() {
   SDL_DestroyTexture(backgroundTex);
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
+  Mix_FreeMusic(backgroundMusic);
   TTF_CloseFont(font);
   IMG_Quit();
   SDL_Quit();

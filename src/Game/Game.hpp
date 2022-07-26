@@ -6,6 +6,7 @@
 #include <SDL_image.h>
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
+#include <SDL_mixer.h>
 #include <SDL_render.h>
 #include <SDL_ttf.h>
 #include <fstream>
@@ -32,6 +33,7 @@ public:
 
   SDL_Color fontColor;
   TTF_Font *font;
+  Mix_Music *backgroundMusic;
 
   void handleEvents();
   void render();
