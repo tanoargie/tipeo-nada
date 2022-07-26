@@ -9,13 +9,11 @@ cmake_minimum_required(VERSION 3.10)
 add_executable(TipeoNada src/main.cpp src/Game/Game.cpp src/Player/Player.cpp src/Button/Button.hpp)
 
 find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIRS} ${SDL2IMAGE_INCLUDE_DIRS})
-target_link_libraries(TipeoNada ${SDL2_LIBRARIES})
-
 find_package(SDL2_image REQUIRED)
-include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
-target_link_libraries(TipeoNada ${SDL2_IMAGE_LIBRARIES})
-
 find_package(SDL2_ttf REQUIRED)
-include_directories(${SDL2_TTF_INCLUDE_DIRS})
-target_link_libraries(TipeoNada ${SDL2_TTF_LIBRARIES})
+find_package(SDL2_mixer REQUIRED)
+
+include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS} ${SDL2_MIXER_INCLUDE_DIRS})
+
+target_link_libraries(TipeoNada ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${SDL2_MIXER_LIBRARIES})
+
