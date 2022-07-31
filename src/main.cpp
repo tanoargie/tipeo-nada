@@ -28,22 +28,28 @@ int main(int argc, char *argv[]) {
     game->difficulty = diffHard;
   };
 
-  SDL_Rect dstEasy, dstMedium, dstHard;
+  const char *diffMessage = "Elegí la dificultad mostro";
 
-  int easyYPos = SCREEN_HEIGHT / 4;
+  SDL_Rect dstEasy, dstMedium, dstHard, dstMessage;
+  TTF_SizeUTF8(game->font, diffMessage, &dstMessage.w, &dstMessage.h);
+  dstMessage.x = SCREEN_WIDTH / 2 - (dstMessage.w / 2);
+  dstMessage.y = SCREEN_HEIGHT / 2 - (dstMessage.h / 2) - 100;
 
-  dstEasy.x = SCREEN_WIDTH / 2;
-  dstEasy.y = easyYPos;
   TTF_SizeUTF8(game->font, getDifficultyChar(diffEasy), &dstEasy.w, &dstEasy.h);
-  dstMedium.x = SCREEN_WIDTH / 2;
-  dstMedium.y = easyYPos + 50;
+  dstEasy.x = SCREEN_WIDTH / 2 - (dstEasy.w / 2);
+  dstEasy.y = dstMessage.y + 100;
+
   TTF_SizeUTF8(game->font, getDifficultyChar(diffMedium), &dstMedium.w,
                &dstMedium.h);
-  dstHard.x = SCREEN_WIDTH / 2;
-  dstHard.y = easyYPos + 100;
+  dstMedium.x = SCREEN_WIDTH / 2 - (dstMedium.w / 2);
+  dstMedium.y = dstEasy.y + 50;
+
   TTF_SizeUTF8(game->font, getDifficultyChar(diffHard), &dstHard.w, &dstHard.h);
+  dstHard.x = SCREEN_WIDTH / 2 - (dstHard.w / 2);
+  dstHard.y = dstMedium.y + 50;
 
   game->renderClear();
+  game->addText(diffMessage, &dstMessage);
   game->addButton(getDifficultyChar(diffEasy), &diffEasyFn, &dstEasy);
   game->addButton(getDifficultyChar(diffMedium), &diffMediumFn, &dstMedium);
   game->addButton(getDifficultyChar(diffHard), &diffHardFn, &dstHard);

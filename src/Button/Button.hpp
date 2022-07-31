@@ -1,7 +1,6 @@
 #ifndef Button_hpp
 #define Button_hpp
 
-#include "SDL_mouse.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mouse.h>
@@ -22,7 +21,6 @@ public:
     callback = new function<void()>;
     *callback = *fn;
 
-    TTF_SizeUTF8(font, text, &(dst->w), &(dst->h));
     surface = TTF_RenderUTF8_Blended(font, text, fontColor);
     texture = SDL_CreateTextureFromSurface(renderer, surface);
 

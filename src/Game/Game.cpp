@@ -212,4 +212,11 @@ void Game::addButton(const char *text, function<void()> *fn, SDL_Rect *dst) {
   gameButtons.push_back(button);
 }
 
+void Game::addText(const char *text, SDL_Rect *dst) {
+  SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text, fontColor);
+  SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+  SDL_RenderCopy(renderer, texture, NULL, dst);
+}
+
 bool Game::running() { return isRunning; }

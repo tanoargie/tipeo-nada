@@ -47,6 +47,7 @@ public:
   bool running();
   bool canAddWord();
   void addButton(const char *text, function<void()> *fn, SDL_Rect *dst);
+  void addText(const char *text, SDL_Rect *dst);
 
 private:
   SDL_Renderer *renderer;
