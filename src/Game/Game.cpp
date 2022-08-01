@@ -132,6 +132,7 @@ Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
     }
   }
   game->showScore();
+  game->showLives();
   game->render();
 
   return interval;
@@ -224,6 +225,23 @@ void Game::showScore() {
   TTF_SizeUTF8(font, ss.str().c_str(), &dst.w, &dst.h);
   dst.x = SCREEN_WIDTH - 150;
   dst.y = SCREEN_HEIGHT - 100;
+
+  SDL_RenderCopy(renderer, texture, NULL, &dst);
+
+  SDL_FreeSurface(surface);
+  SDL_DestroyTexture(texture);
+}
+
+void Game::showLives() {
+  stringstream ss;
+  ss << "Vidas: " << player->health;
+  SDL_Surface *surface =
+      TTF_RenderUTF8_Blended(font, ss.str().c_str(), fontColor);
+  SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+  SDL_Rect dst;
+  TTF_SizeUTF8(font, ss.str().c_str(), &dst.w, &dst.h);
+  dst.x = SCREEN_WIDTH - 150;
+  dst.y = SCREEN_HEIGHT - 50;
 
   SDL_RenderCopy(renderer, texture, NULL, &dst);
 

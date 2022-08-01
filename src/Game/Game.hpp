@@ -45,6 +45,7 @@ public:
   static Uint32 showWord(Uint32 interval, void *param);
   static Uint32 updateWordsLocation(Uint32 interval, void *param);
   void showScore();
+  void showLives();
 
   bool running();
   bool canAddWord();
