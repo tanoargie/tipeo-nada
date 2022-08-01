@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <string>
 #include <time.h>
 #include <utility>
@@ -43,11 +44,13 @@ public:
   bool isWordTypingOnScreen();
   static Uint32 showWord(Uint32 interval, void *param);
   static Uint32 updateWordsLocation(Uint32 interval, void *param);
+  void showScore();
 
   bool running();
   bool canAddWord();
   void addButton(const char *text, function<void()> *fn, SDL_Rect *dst);
   void addText(const char *text, SDL_Rect *dst);
+  void addScore(int sumScore);
 
 private:
   SDL_Renderer *renderer;
@@ -60,6 +63,7 @@ private:
   string wordTyping;
   Player *player;
   vector<Button *> gameButtons;
+  int score = 0;
 };
 
 #endif

@@ -130,6 +130,7 @@ Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
       it++;
     }
   }
+  game->showScore();
   SDL_RenderPresent(game->renderer);
 
   return interval;
@@ -189,6 +190,13 @@ void Game::handleEvents() {
     if (event.key.keysym.sym == SDLK_RETURN) {
       if (isWordTypingOnScreen()) {
         removeWord();
+        if (difficulty == EASY) {
+          addScore(1);
+        } else if (difficulty == MEDIUM) {
+          addScore(3);
+        } else if (difficulty == HARD) {
+          addScore(5);
+        }
       }
       wordTyping.clear();
     }
@@ -201,6 +209,25 @@ void Game::handleEvents() {
   for (int i = 0; i < gameButtons.size(); i++) {
     gameButtons[i]->handleEvents(event);
   }
+}
+
+void Game::addScore(int sumScore) { score += sumScore; }
+
+void Game::showScore() {
+  stringstream ss;
+  ss << "Puntos: " << score;
+  SDL_Surface *surface =
+      TTF_RenderUTF8_Blended(font, ss.str().c_str(), fontColor);
+  SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+  SDL_Rect dst;
+  TTF_SizeUTF8(font, ss.str().c_str(), &dst.w, &dst.h);
+  dst.x = SCREEN_WIDTH - 150;
+  dst.y = SCREEN_HEIGHT - 100;
+
+  SDL_RenderCopy(renderer, texture, NULL, &dst);
+
+  SDL_FreeSurface(surface);
+  SDL_DestroyTexture(texture);
 }
 
 void Game::render() { SDL_RenderPresent(renderer); }
