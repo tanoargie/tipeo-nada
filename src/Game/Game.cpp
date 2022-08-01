@@ -88,7 +88,8 @@ Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
   Game *game = reinterpret_cast<Game *>(param);
   map<string, pair<int, int>>::const_iterator it =
       game->wordsOnScreen->cbegin();
-  SDL_RenderClear(game->renderer);
+
+  game->renderClear();
   while (it != game->wordsOnScreen->cend()) {
     SDL_Rect dst;
 
@@ -131,7 +132,7 @@ Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
     }
   }
   game->showScore();
-  SDL_RenderPresent(game->renderer);
+  game->render();
 
   return interval;
 }
