@@ -18,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-#include "../Button/Button.hpp"
+#include "../Button/Button.cpp"
 #include "../Player/Player.hpp"
 #include "../constants.cpp"
 

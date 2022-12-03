@@ -1,5 +1,5 @@
-#ifndef Button_hpp
-#define Button_hpp
+#ifndef Button_cpp
+#define Button_cpp
 
 #include <SDL.h>
 #include <SDL_image.h>

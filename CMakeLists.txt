@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 cmake_minimum_required(VERSION 3.10)
 
-add_executable(TipeoNada src/main.cpp src/Game/Game.cpp src/Player/Player.cpp src/Button/Button.hpp)
+add_executable(TipeoNada src/main.cpp src/Game/Game.cpp src/Player/Player.cpp src/Button/Button.cpp)
 
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
