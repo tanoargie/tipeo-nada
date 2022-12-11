@@ -2,12 +2,14 @@
 #define Game_hpp
 
 #include <SDL.h>
+#include <SDL_error.h>
 #include <SDL_events.h>
 #include <SDL_image.h>
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 #include <SDL_mixer.h>
 #include <SDL_render.h>
+#include <SDL_timer.h>
 #include <SDL_ttf.h>
 #include <fstream>
 #include <iostream>
@@ -35,7 +37,10 @@ public:
   SDL_Color fontColor;
   TTF_Font *font;
   Mix_Music *backgroundMusic;
+  Uint32 timerIdShowWord = 0;
+  Uint32 timerIdUpdateWordsLocation = 0;
 
+  bool setTimer = false;
   void handleEvents();
   void render();
   void renderClear();
@@ -43,7 +48,9 @@ public:
   void removeWord();
   bool isWordTypingOnScreen();
   static Uint32 showWord(Uint32 interval, void *param);
+  static void showWord(void *param);
   static Uint32 updateWordsLocation(Uint32 interval, void *param);
+  static void updateWordsLocation(void *param);
   void showScore();
   void showLives();
 
@@ -54,17 +61,17 @@ public:
   void addScore(int sumScore);
 
 private:
-  SDL_Renderer *renderer;
-  SDL_Window *window;
   SDL_Surface *backgroundImage;
   SDL_Texture *backgroundTex;
-  vector<string> words;
-  map<string, pair<int, int>> *wordsOnScreen;
-  bool isRunning;
-  string wordTyping;
-  Player *player;
-  vector<Button *> gameButtons;
   int score = 0;
+  vector<Button *> gameButtons;
+  string wordTyping;
+  SDL_Window *window;
+  Player *player;
+  SDL_Renderer *renderer;
+  map<string, pair<int, int>> *wordsOnScreen;
+  vector<string> words;
+  bool isRunning;
 };
 
 #endif

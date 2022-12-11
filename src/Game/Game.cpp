@@ -1,7 +1,7 @@
 #include "Game.hpp"
 
 Game::Game(const char *title) {
-  if (SDL_Init(SDL_INIT_EVERYTHING) == 0 && IMG_Init(IMG_INIT_PNG) &&
+  if (SDL_Init(SDL_INIT_TIMER) == 0 && IMG_Init(IMG_INIT_PNG) &&
       TTF_Init() == 0 && Mix_Init(MIX_INIT_MP3) != 0) {
     cout << "Initialized!" << endl;
     window = SDL_CreateWindow("TipeoNada", SDL_WINDOWPOS_UNDEFINED,
@@ -14,7 +14,7 @@ Game::Game(const char *title) {
       return;
     }
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer(window, -1, 0);
     wordsOnScreen = new map<string, pair<int, int>>();
 
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
@@ -62,6 +62,7 @@ Game::Game(const char *title) {
 
     isRunning = true;
   } else {
+    printf("Some init failed: %s\n", SDL_GetError());
     isRunning = false;
   }
 }
@@ -69,6 +70,10 @@ Game::Game(const char *title) {
 Game::~Game() {
   for (int i = 0; i < gameButtons.size(); i++) {
     delete gameButtons[i];
+  }
+  if (setTimer) {
+    SDL_RemoveTimer(timerIdShowWord);
+    SDL_RemoveTimer(timerIdUpdateWordsLocation);
   }
   delete wordsOnScreen;
   wordsOnScreen = NULL;
@@ -84,8 +89,60 @@ Game::~Game() {
   SDL_Quit();
 }
 
+void Game::updateWordsLocation(void *param) {
+  Game *game = static_cast<Game *>(param);
+  map<string, pair<int, int>>::const_iterator it =
+      game->wordsOnScreen->cbegin();
+
+  game->renderClear();
+  while (it != game->wordsOnScreen->cend()) {
+    SDL_Rect dst;
+
+    dst.x = it->second.first;
+    dst.y = it->second.second;
+
+    int windowHeight;
+    int windowWidth;
+
+    SDL_GetWindowSize(game->window, &windowWidth, &windowHeight);
+
+    if (it->second.second + 15 > windowHeight) {
+      game->wordsOnScreen->erase(it++);
+
+      game->player->loseLife(1);
+
+      if (game->player->health == 0) {
+        game->isRunning = false;
+      }
+    } else {
+      SDL_Surface *surfaceMessage = TTF_RenderUTF8_Blended(
+          game->font, it->first.c_str(), game->fontColor);
+
+      SDL_Texture *message =
+          SDL_CreateTextureFromSurface(game->renderer, surfaceMessage);
+
+      pair<int, int> newPosition =
+          make_pair(it->second.first, it->second.second + 15);
+
+      game->wordsOnScreen->operator[](it->first) = newPosition;
+
+      TTF_SizeUTF8(game->font, it->first.c_str(), &dst.w, &dst.h);
+
+      SDL_RenderCopy(game->renderer, message, NULL, &dst);
+
+      SDL_FreeSurface(surfaceMessage);
+      SDL_DestroyTexture(message);
+
+      it++;
+    }
+  }
+  game->showScore();
+  game->showLives();
+  game->render();
+}
+
 Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
-  Game *game = reinterpret_cast<Game *>(param);
+  Game *game = static_cast<Game *>(param);
   map<string, pair<int, int>>::const_iterator it =
       game->wordsOnScreen->cbegin();
 
@@ -149,8 +206,26 @@ bool Game::canAddWord() {
   return false;
 }
 
+void Game::showWord(void *param) {
+  Game *game = static_cast<Game *>(param);
+  int random = rand() % game->words.size();
+  int randomX = rand() % (SCREEN_WIDTH - 100);
+
+  string randomWord = game->words.at(random);
+  if (randomX > 1100 && randomWord.size() > 5) {
+    randomX -= 300;
+  }
+
+  pair<int, int> position = make_pair(randomX, 0);
+
+  if (game->canAddWord()) {
+    game->wordsOnScreen->insert(
+        pair<string, pair<int, int>>(randomWord, position));
+  }
+}
+
 Uint32 Game::showWord(Uint32 interval, void *param) {
-  Game *game = reinterpret_cast<Game *>(param);
+  Game *game = static_cast<Game *>(param);
   int random = rand() % game->words.size();
   int randomX = rand() % (SCREEN_WIDTH - 100);
 
@@ -180,36 +255,37 @@ bool Game::isWordTypingOnScreen() {
 
 void Game::handleEvents() {
   SDL_Event event;
-  SDL_PollEvent(&event);
-  switch (event.type) {
-  case SDL_QUIT:
-    isRunning = false;
-    break;
-  case SDL_KEYDOWN:
-    if (event.key.keysym.sym == SDLK_BACKSPACE && wordTyping.size() > 0) {
-      wordTyping.pop_back();
+  while (SDL_PollEvent(&event)) {
+    for (int i = 0; i < gameButtons.size(); i++) {
+      gameButtons[i]->handleEvents(event);
     }
-    if (event.key.keysym.sym == SDLK_RETURN) {
-      if (isWordTypingOnScreen()) {
-        removeWord();
-        if (difficulty == EASY) {
-          addScore(1);
-        } else if (difficulty == MEDIUM) {
-          addScore(3);
-        } else if (difficulty == HARD) {
-          addScore(5);
-        }
+    switch (event.type) {
+    case SDL_QUIT:
+      isRunning = false;
+      break;
+    case SDL_KEYDOWN:
+      if (event.key.keysym.sym == SDLK_BACKSPACE && wordTyping.size() > 0) {
+        wordTyping.pop_back();
       }
-      wordTyping.clear();
+      if (event.key.keysym.sym == SDLK_RETURN) {
+        if (isWordTypingOnScreen()) {
+          removeWord();
+          if (difficulty == EASY) {
+            addScore(1);
+          } else if (difficulty == MEDIUM) {
+            addScore(3);
+          } else if (difficulty == HARD) {
+            addScore(5);
+          }
+        }
+        wordTyping.clear();
+      }
+      break;
+    case SDL_TEXTINPUT:
+      auto newChar = event.text.text;
+      wordTyping.append(newChar);
+      break;
     }
-    break;
-  case SDL_TEXTINPUT:
-    auto newChar = event.text.text;
-    wordTyping.append(newChar);
-    break;
-  }
-  for (int i = 0; i < gameButtons.size(); i++) {
-    gameButtons[i]->handleEvents(event);
   }
 }
 

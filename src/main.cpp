@@ -1,16 +1,37 @@
 #include "Game/Game.hpp"
 
-#include <SDL_error.h>
-#include <SDL_timer.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <emscripten/html5.h>
+
+void one_iter(void *userData) {
+  Game *game = static_cast<Game *>(userData);
+
+  game->handleEvents();
+
+  if (game->difficulty != NOT_SET) {
+    // ya eligió dificultad
+
+    if (!game->setTimer) {
+      if (game->difficulty == EASY) {
+        emscripten_set_interval(&Game::showWord, 3000, userData);
+      } else if (game->difficulty == MEDIUM) {
+        emscripten_set_interval(&Game::showWord, 1500, userData);
+      } else if (game->difficulty == HARD) {
+        emscripten_set_interval(&Game::showWord, 500, userData);
+      }
+      emscripten_set_interval(&Game::updateWordsLocation, 250, userData);
+      game->setTimer = true;
+    }
+  }
+}
+#endif
+
 int main(int argc, char *argv[]) {
   Game *game = new Game("TipeoNada");
-
-  if (SDL_Init(SDL_INIT_TIMER) < 0) {
-    cout << SDL_GetError();
-  }
 
   difficultyEnum diffEasy = EASY;
   difficultyEnum diffMedium = MEDIUM;
@@ -55,35 +76,31 @@ int main(int argc, char *argv[]) {
   game->addButton(getDifficultyChar(diffHard), &diffHardFn, &dstHard);
   game->render();
 
-  Uint32 timerIdShowWord;
-  Uint32 timerIdUpdateWordsLocation;
-
-  bool setTimer = false;
+#ifdef __EMSCRIPTEN__
+  emscripten_set_main_loop_arg(one_iter, game, 0, 1);
+#else
   while (game->running()) {
     game->handleEvents();
 
     if (game->difficulty != NOT_SET) {
       // ya eligió dificultad
 
-      if (!setTimer) {
+      if (!game->setTimer) {
         if (game->difficulty == EASY) {
-          Uint32 timerIdShowWord = SDL_AddTimer(3000, &Game::showWord, game);
+          game->timerIdShowWord = SDL_AddTimer(3000, &Game::showWord, game);
         } else if (game->difficulty == MEDIUM) {
-          Uint32 timerIdShowWord = SDL_AddTimer(1500, &Game::showWord, game);
+          game->timerIdShowWord = SDL_AddTimer(1500, &Game::showWord, game);
         } else if (game->difficulty == HARD) {
-          Uint32 timerIdShowWord = SDL_AddTimer(500, &Game::showWord, game);
+          game->timerIdShowWord = SDL_AddTimer(500, &Game::showWord, game);
         }
-        Uint32 timerIdUpdateWordsLocation =
+        game->timerIdUpdateWordsLocation =
             SDL_AddTimer(250, &Game::updateWordsLocation, game);
-        setTimer = true;
+        game->setTimer = true;
       }
     }
   }
 
-  if (setTimer) {
-    SDL_RemoveTimer(timerIdShowWord);
-    SDL_RemoveTimer(timerIdUpdateWordsLocation);
-  }
+#endif
 
   return 0;
 }
