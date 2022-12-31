@@ -1,6 +1,7 @@
 .git
 .git/
 build/
+web/
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
