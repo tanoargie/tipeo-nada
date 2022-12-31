@@ -293,7 +293,7 @@ void Game::addScore(int sumScore) { score += sumScore; }
 
 void Game::showScore() {
   stringstream ss;
-  ss << "Puntos: " << score;
+  ss << "Points: " << score;
   SDL_Surface *surface =
       TTF_RenderUTF8_Blended(font, ss.str().c_str(), fontColor);
   SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -310,7 +310,7 @@ void Game::showScore() {
 
 void Game::showLives() {
   stringstream ss;
-  ss << "Vidas: " << player->health;
+  ss << "Lives: " << player->health;
   SDL_Surface *surface =
       TTF_RenderUTF8_Blended(font, ss.str().c_str(), fontColor);
   SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);

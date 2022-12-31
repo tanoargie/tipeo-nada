@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     game->difficulty = diffHard;
   };
 
-  const char *diffMessage = "Elegí la dificultad mostro";
+  const char *diffMessage = "Choose difficulty, please:";
 
   SDL_Rect dstEasy, dstMedium, dstHard, dstMessage;
   TTF_SizeUTF8(game->font, diffMessage, &dstMessage.w, &dstMessage.h);
