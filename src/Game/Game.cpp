@@ -20,7 +20,7 @@ Game::Game(const char *title) {
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
       printf("Error opening music: %s\n", Mix_GetError());
     } else {
-      backgroundMusic = Mix_LoadMUS("src/Assets/cyberpunk.mp3");
+      backgroundMusic = Mix_LoadMUS("../src/Assets/cyberpunk.mp3");
       Mix_VolumeMusic((20 * MIX_MAX_VOLUME) / 100);
 
       if (!backgroundMusic) {
@@ -40,7 +40,7 @@ Game::Game(const char *title) {
       return;
     }
 
-    font = TTF_OpenFont("src/Assets/OpenSans-Bold.ttf", 24);
+    font = TTF_OpenFont("../src/Assets/OpenSans-Bold.ttf", 24);
     if (font == NULL) {
       cout << SDL_GetError();
     }
@@ -48,11 +48,10 @@ Game::Game(const char *title) {
     fontColor.r = 255;
     fontColor.g = 255;
     fontColor.b = 255;
-    fontColor.a = 0;
 
     srand(time(0));
 
-    ifstream wordfile("src/Assets/words.txt");
+    ifstream wordfile("../src/Assets/words.txt");
     string line;
 
     while (getline(wordfile, line)) {

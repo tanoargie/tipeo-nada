@@ -1,6 +1,7 @@
 .git
 .git/
 build/
+build_emscripten/
 web/
 CMakeLists.txt.user
 CMakeCache.txt
