@@ -1,9 +1,26 @@
 #include "Game.hpp"
 
+bool Game::initializeAudio() {
+#ifdef __EMSCRIPTEN__
+  if (Mix_Init(MIX_INIT_MP3) == 0) {
+    return true;
+  }
+  printf("Init emscripten audio failed: %s\n", SDL_GetError());
+  return false;
+#else
+  if (Mix_Init(MIX_INIT_MP3) != 0) {
+    return true;
+  }
+  printf("Init audio failed: %s\n", SDL_GetError());
+  return false;
+#endif
+}
+
 Game::Game(const char *title) {
   if (SDL_Init(SDL_INIT_TIMER) == 0 && IMG_Init(IMG_INIT_PNG) &&
-      TTF_Init() == 0 && Mix_Init(MIX_INIT_MP3) != 0) {
+      TTF_Init() == 0 && initializeAudio()) {
     cout << "Initialized!" << endl;
+
     window = SDL_CreateWindow("TipeoNada", SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
                               SCREEN_HEIGHT, SDL_WINDOW_OPENGL);

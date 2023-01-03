@@ -53,6 +53,7 @@ public:
   static void updateWordsLocation(void *param);
   void showScore();
   void showLives();
+  bool initializeAudio();
 
   bool running();
   bool canAddWord();
