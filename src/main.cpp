@@ -4,9 +4,6 @@
 #include <stdlib.h>
 
 #ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#include <emscripten/html5.h>
-
 void one_iter(void *userData) {
   Game *game = static_cast<Game *>(userData);
 
@@ -17,13 +14,17 @@ void one_iter(void *userData) {
 
     if (!game->setTimer) {
       if (game->difficulty == EASY) {
-        emscripten_set_interval(&Game::showWord, 3000, userData);
+        game->timerIdShowWord =
+            emscripten_set_interval(&Game::showWord, 3000, userData);
       } else if (game->difficulty == MEDIUM) {
-        emscripten_set_interval(&Game::showWord, 1500, userData);
+        game->timerIdShowWord =
+            emscripten_set_interval(&Game::showWord, 1500, userData);
       } else if (game->difficulty == HARD) {
-        emscripten_set_interval(&Game::showWord, 500, userData);
+        game->timerIdShowWord =
+            emscripten_set_interval(&Game::showWord, 500, userData);
       }
-      emscripten_set_interval(&Game::updateWordsLocation, 250, userData);
+      game->timerIdUpdateWordsLocation =
+          emscripten_set_interval(&Game::updateWordsLocation, 250, userData);
       game->setTimer = true;
     }
   }

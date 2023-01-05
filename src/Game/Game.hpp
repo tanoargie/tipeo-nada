@@ -19,6 +19,10 @@
 #include <time.h>
 #include <utility>
 #include <vector>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <emscripten/html5.h>
+#endif
 
 #include "../Button/Button.cpp"
 #include "../Player/Player.hpp"

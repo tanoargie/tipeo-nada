@@ -21,6 +21,9 @@ Game::Game(const char *title) {
       TTF_Init() == 0 && initializeAudio()) {
     cout << "Initialized!" << endl;
 
+#ifdef __EMSCRIPTEN__
+    SDL_EventState(SDL_KEYUP, SDL_DISABLE);
+#endif
     window = SDL_CreateWindow("TipeoNada", SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
                               SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
@@ -128,7 +131,11 @@ void Game::updateWordsLocation(void *param) {
       game->player->loseLife(1);
 
       if (game->player->health == 0) {
-        game->isRunning = false;
+#ifdef __EMSCRIPTEN__
+        emscripten_clear_interval(game->timerIdShowWord);
+        emscripten_clear_interval(game->timerIdUpdateWordsLocation);
+        emscripten_cancel_main_loop();
+#endif
       }
     } else {
       SDL_Surface *surfaceMessage = TTF_RenderUTF8_Blended(
@@ -275,15 +282,25 @@ void Game::handleEvents() {
     for (int i = 0; i < gameButtons.size(); i++) {
       gameButtons[i]->handleEvents(event);
     }
+    string newChar = "";
+#ifdef __EMSCRIPTEN__
+    bool isBackspace = event.key.keysym.sym == 42;
+    bool isEnter = event.key.keysym.sym == 40;
+    newChar = event.key.keysym.scancode;
+#else
+    bool isBackspace = event.key.keysym.sym == SDLK_BACKSPACE;
+    bool isEnter = event.key.keysym.sym == SDLK_RETURN;
+    newChar = event.text.text;
+#endif
     switch (event.type) {
     case SDL_QUIT:
       isRunning = false;
       break;
     case SDL_KEYDOWN:
-      if (event.key.keysym.sym == SDLK_BACKSPACE && wordTyping.size() > 0) {
+      if (isBackspace && wordTyping.size() > 0) {
         wordTyping.pop_back();
       }
-      if (event.key.keysym.sym == SDLK_RETURN) {
+      if (isEnter) {
         if (isWordTypingOnScreen()) {
           removeWord();
           if (difficulty == EASY) {
@@ -298,7 +315,6 @@ void Game::handleEvents() {
       }
       break;
     case SDL_TEXTINPUT:
-      auto newChar = event.text.text;
       wordTyping.append(newChar);
       break;
     }
