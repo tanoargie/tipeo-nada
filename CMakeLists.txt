@@ -13,15 +13,24 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
 
   set_target_properties(${PROJECT_NAME}Web PROPERTIES LINK_FLAGS "-sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='[\"png\"]' -sUSE_SDL_TTF=2 -sUSE_SDL_MIXER=2 -sUSE_MPG123=1 -sSDL2_MIXER_FORMATS='[\"mp3\"]' -lmpg123 --preload-file ../src/Assets")
 else()
-  find_package(SDL2 REQUIRED)
-  find_package(SDL2_image REQUIRED)
-  find_package(SDL2_ttf REQUIRED)
-  find_package(SDL2_mixer REQUIRED)
-  
+  set( SDL2MIXER_SAMPLES OFF CACHE BOOL "" FORCE )
+  set( SDL2MIXER_INSTALL OFF CACHE BOOL "" FORCE )
+  set( SDL2MIXER_VENDORED ON CACHE BOOL "" FORCE )
+  set( SDL2MIXER_DEPS_SHARED OFF CACHE BOOL "" FORCE )
+  set( SDL2MIXER_FLAC OFF CACHE BOOL "" FORCE )
+  set( SDL2MIXER_MOD OFF CACHE BOOL "" FORCE )
+  set( SDL2MIXER_MP3 ON CACHE BOOL "" FORCE )
+  set( SDL2MIXER_MIDI OFF CACHE BOOL "" FORCE )
+  set( SDL2MIXER_OPUS OFF CACHE BOOL "" FORCE )
+  set( SDL2MIXER_WAVPACK OFF CACHE BOOL "" FORCE )
+
+  add_subdirectory("external/SDL")
+  add_subdirectory("external/SDL_image")
+  add_subdirectory("external/SDL_ttf")
+  add_subdirectory("external/SDL_mixer")
+
   add_executable(${PROJECT_NAME} src/main.cpp src/Game/Game.cpp src/Player/Player.cpp src/Button/Button.cpp)
   
-  include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS} ${SDL2_MIXER_INCLUDE_DIRS})
-  
-  target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${SDL2_MIXER_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME} SDL2::SDL2-static SDL2_image::SDL2_image-static SDL2_ttf::SDL2_ttf-static SDL2_mixer::SDL2_mixer-static)
 endif()
 
