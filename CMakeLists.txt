@@ -24,13 +24,20 @@ else()
   set( SDL2MIXER_OPUS OFF CACHE BOOL "" FORCE )
   set( SDL2MIXER_WAVPACK OFF CACHE BOOL "" FORCE )
 
-  add_subdirectory("external/SDL")
-  add_subdirectory("external/SDL_image")
-  add_subdirectory("external/SDL_ttf")
-  add_subdirectory("external/SDL_mixer")
-
   add_executable(${PROJECT_NAME} src/main.cpp src/Game/Game.cpp src/Player/Player.cpp src/Button/Button.cpp)
-  
-  target_link_libraries(${PROJECT_NAME} SDL2::SDL2-static SDL2_image::SDL2_image-static SDL2_ttf::SDL2_ttf-static SDL2_mixer::SDL2_mixer-static)
+
+  add_subdirectory("external/SDL")
+  target_link_libraries(${PROJECT_NAME} SDL2)
+
+  add_subdirectory("external/SDL_image")
+  target_link_libraries(${PROJECT_NAME} SDL2_image)
+
+  add_subdirectory("external/SDL_ttf")
+  target_link_libraries(${PROJECT_NAME} SDL2_ttf)
+
+  add_subdirectory("external/SDL_mixer")
+  target_link_libraries(${PROJECT_NAME} SDL2_mixer)
+
+  file(COPY src/Assets DESTINATION ${CMAKE_BINARY_DIR})
 endif()
 
