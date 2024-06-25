@@ -9,7 +9,11 @@
 - SDL_Image
 - SDL_TTF
 
-This 4 dependencies are added as git submodules so after cloning you should get these 4 under the `external` directory.
+This 4 dependencies are added as git submodules so after cloning you should get these 4 under the `external` directory. Remember to initialize the `external` directory by running in the root folder:
+```
+git submodule init
+git submodule update
+```
 
 ###### For web version
 
@@ -31,6 +35,12 @@ and for the desktop version:
 cmake . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 cd build
 make
+```
+
+##### Troubleshooting
+You may have an issue running the first cmake step if CMake does not know where the compiler is. You can also point your compilers with CMake flags, for example:
+```
+cmake . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_C_COMPILER=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc -DCMAKE_CXX_COMPILER=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++
 ```
 
 Then you can test it locally by going to `build` directory and running:
