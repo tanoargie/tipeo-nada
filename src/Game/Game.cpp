@@ -219,12 +219,12 @@ Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
 }
 
 bool Game::canAddWord() {
-  if (difficulty == EASY && wordsOnScreen->size() < 10) {
-    return true;
-  } else if (difficulty == MEDIUM && wordsOnScreen->size() < 20) {
-    return true;
-  } else if (difficulty == HARD && wordsOnScreen->size() < 30) {
-    return true;
+  if (difficulty == EASY) {
+    return wordsOnScreen->size() < 10;
+  } else if (difficulty == MEDIUM) {
+    return wordsOnScreen->size() < 20;
+  } else if (difficulty == HARD) {
+    return wordsOnScreen->size() < 30;
   }
   return false;
 }
