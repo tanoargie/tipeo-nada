@@ -84,8 +84,6 @@ int main(int argc, char *argv[]) {
     game->handleEvents();
 
     if (game->difficulty != NOT_SET) {
-      // ya eligió dificultad
-
       if (!game->setTimer) {
         if (game->difficulty == EASY) {
           game->timerIdShowWord = SDL_AddTimer(3000, &Game::showWordSDL, game);
@@ -100,7 +98,6 @@ int main(int argc, char *argv[]) {
       }
     }
   }
-
 #endif
 
   return 0;
