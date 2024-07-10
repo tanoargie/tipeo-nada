@@ -37,40 +37,41 @@ public:
   ~Game();
 
   difficultyEnum difficulty = NOT_SET;
+  bool setTimer = false;
+  Uint32 timerIdShowWord = 0;
+  Uint32 timerIdUpdateWordsLocation = 0;
 
   SDL_Color fontColor;
   TTF_Font *font;
   Mix_Music *backgroundMusic;
-  Uint32 timerIdShowWord = 0;
-  Uint32 timerIdUpdateWordsLocation = 0;
 
-  bool setTimer = false;
   void handleEvents();
   void render();
   void renderClear();
   void draw();
   void removeWord();
   bool isWordTypingOnScreen();
-  static Uint32 showWordSDL(Uint32 interval, void *param);
-  static void showWordEmscripten(void *param);
-  static Uint32 updateWordsLocationSDL(Uint32 interval, void *param);
-  static void updateWordsLocationEmscripten(void *param);
   void showWord();
   void updateWordsLocation();
   void showScore();
   void showLives();
   bool initializeAudio();
-
   bool running();
   bool canAddWord();
   void addButton(const char *text, function<void()> *fn, SDL_Rect *dst);
   void addText(const char *text, SDL_Rect *dst);
   void addScore(int sumScore);
 
+  static Uint32 showWordSDL(Uint32 interval, void *param);
+  static void showWordEmscripten(void *param);
+  static Uint32 updateWordsLocationSDL(Uint32 interval, void *param);
+  static void updateWordsLocationEmscripten(void *param);
+
 private:
+  int score = 0;
+
   SDL_Surface *backgroundImage;
   SDL_Texture *backgroundTex;
-  int score = 0;
   vector<Button *> gameButtons;
   string wordTyping;
   SDL_Window *window;
