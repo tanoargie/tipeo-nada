@@ -51,10 +51,12 @@ public:
   void draw();
   void removeWord();
   bool isWordTypingOnScreen();
-  static Uint32 showWord(Uint32 interval, void *param);
-  static void showWord(void *param);
-  static Uint32 updateWordsLocation(Uint32 interval, void *param);
-  static void updateWordsLocation(void *param);
+  static Uint32 showWordSDL(Uint32 interval, void *param);
+  static void showWordEmscripten(void *param);
+  static Uint32 updateWordsLocationSDL(Uint32 interval, void *param);
+  static void updateWordsLocationEmscripten(void *param);
+  void showWord();
+  void updateWordsLocation();
   void showScore();
   void showLives();
   bool initializeAudio();

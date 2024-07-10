@@ -15,16 +15,16 @@ void one_iter(void *userData) {
     if (!game->setTimer) {
       if (game->difficulty == EASY) {
         game->timerIdShowWord =
-            emscripten_set_interval(&Game::showWord, 3000, userData);
+            emscripten_set_interval(&Game::showWordEmscripten, 3000, userData);
       } else if (game->difficulty == MEDIUM) {
         game->timerIdShowWord =
-            emscripten_set_interval(&Game::showWord, 1500, userData);
+            emscripten_set_interval(&Game::showWordEmscripten, 1500, userData);
       } else if (game->difficulty == HARD) {
         game->timerIdShowWord =
-            emscripten_set_interval(&Game::showWord, 500, userData);
+            emscripten_set_interval(&Game::showWordEmscripten, 500, userData);
       }
-      game->timerIdUpdateWordsLocation =
-          emscripten_set_interval(&Game::updateWordsLocation, 250, userData);
+      game->timerIdUpdateWordsLocation = emscripten_set_interval(
+          &Game::updateWordsLocationEmscripten, 250, userData);
       game->setTimer = true;
     }
   }
@@ -88,14 +88,14 @@ int main(int argc, char *argv[]) {
 
       if (!game->setTimer) {
         if (game->difficulty == EASY) {
-          game->timerIdShowWord = SDL_AddTimer(3000, &Game::showWord, game);
+          game->timerIdShowWord = SDL_AddTimer(3000, &Game::showWordSDL, game);
         } else if (game->difficulty == MEDIUM) {
-          game->timerIdShowWord = SDL_AddTimer(1500, &Game::showWord, game);
+          game->timerIdShowWord = SDL_AddTimer(1500, &Game::showWordSDL, game);
         } else if (game->difficulty == HARD) {
-          game->timerIdShowWord = SDL_AddTimer(500, &Game::showWord, game);
+          game->timerIdShowWord = SDL_AddTimer(500, &Game::showWordSDL, game);
         }
         game->timerIdUpdateWordsLocation =
-            SDL_AddTimer(250, &Game::updateWordsLocation, game);
+            SDL_AddTimer(250, &Game::updateWordsLocationSDL, game);
         game->setTimer = true;
       }
     }

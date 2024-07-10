@@ -108,13 +108,23 @@ Game::~Game() {
   SDL_Quit();
 }
 
-void Game::updateWordsLocation(void *param) {
+void Game::updateWordsLocationEmscripten(void *param) {
   Game *game = static_cast<Game *>(param);
-  map<string, pair<int, int>>::const_iterator it =
-      game->wordsOnScreen->cbegin();
+  game->updateWordsLocation();
+}
 
-  game->renderClear();
-  while (it != game->wordsOnScreen->cend()) {
+Uint32 Game::updateWordsLocationSDL(Uint32 interval, void *param) {
+  Game *game = static_cast<Game *>(param);
+  game->updateWordsLocation();
+
+  return interval;
+}
+
+void Game::updateWordsLocation() {
+  map<string, pair<int, int>>::const_iterator it = wordsOnScreen->cbegin();
+
+  renderClear();
+  while (it != wordsOnScreen->cend()) {
     SDL_Rect dst;
 
     dst.x = it->second.first;
@@ -123,14 +133,15 @@ void Game::updateWordsLocation(void *param) {
     int windowHeight;
     int windowWidth;
 
-    SDL_GetWindowSize(game->window, &windowWidth, &windowHeight);
+    SDL_GetWindowSize(window, &windowWidth, &windowHeight);
 
     if (it->second.second + 15 > windowHeight) {
-      game->wordsOnScreen->erase(it++);
+      wordsOnScreen->erase(it++);
 
-      game->player->loseLife(1);
+      player->loseLife(1);
 
-      if (game->player->health == 0) {
+      if (player->health == 0) {
+        isRunning = false;
 #ifdef __EMSCRIPTEN__
         emscripten_clear_interval(game->timerIdShowWord);
         emscripten_clear_interval(game->timerIdUpdateWordsLocation);
@@ -138,20 +149,20 @@ void Game::updateWordsLocation(void *param) {
 #endif
       }
     } else {
-      SDL_Surface *surfaceMessage = TTF_RenderUTF8_Blended(
-          game->font, it->first.c_str(), game->fontColor);
+      SDL_Surface *surfaceMessage =
+          TTF_RenderUTF8_Blended(font, it->first.c_str(), fontColor);
 
       SDL_Texture *message =
-          SDL_CreateTextureFromSurface(game->renderer, surfaceMessage);
+          SDL_CreateTextureFromSurface(renderer, surfaceMessage);
 
       pair<int, int> newPosition =
           make_pair(it->second.first, it->second.second + 15);
 
-      game->wordsOnScreen->operator[](it->first) = newPosition;
+      wordsOnScreen->operator[](it->first) = newPosition;
 
-      TTF_SizeUTF8(game->font, it->first.c_str(), &dst.w, &dst.h);
+      TTF_SizeUTF8(font, it->first.c_str(), &dst.w, &dst.h);
 
-      SDL_RenderCopy(game->renderer, message, NULL, &dst);
+      SDL_RenderCopy(renderer, message, NULL, &dst);
 
       SDL_FreeSurface(surfaceMessage);
       SDL_DestroyTexture(message);
@@ -159,63 +170,9 @@ void Game::updateWordsLocation(void *param) {
       it++;
     }
   }
-  game->showScore();
-  game->showLives();
-  game->render();
-}
-
-Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
-  Game *game = static_cast<Game *>(param);
-  map<string, pair<int, int>>::const_iterator it =
-      game->wordsOnScreen->cbegin();
-
-  game->renderClear();
-  while (it != game->wordsOnScreen->cend()) {
-    SDL_Rect dst;
-
-    dst.x = it->second.first;
-    dst.y = it->second.second;
-
-    int windowHeight;
-    int windowWidth;
-
-    SDL_GetWindowSize(game->window, &windowWidth, &windowHeight);
-
-    if (it->second.second + 15 > windowHeight) {
-      game->wordsOnScreen->erase(it++);
-
-      game->player->loseLife(1);
-
-      if (game->player->health == 0) {
-        game->isRunning = false;
-      }
-    } else {
-      SDL_Surface *surfaceMessage = TTF_RenderUTF8_Blended(
-          game->font, it->first.c_str(), game->fontColor);
-
-      SDL_Texture *message =
-          SDL_CreateTextureFromSurface(game->renderer, surfaceMessage);
-
-      pair<int, int> newPosition =
-          make_pair(it->second.first, it->second.second + 15);
-
-      game->wordsOnScreen->operator[](it->first) = newPosition;
-
-      TTF_SizeUTF8(game->font, it->first.c_str(), &dst.w, &dst.h);
-
-      SDL_RenderCopy(game->renderer, message, NULL, &dst);
-
-      SDL_FreeSurface(surfaceMessage);
-      SDL_DestroyTexture(message);
-
-      it++;
-    }
-  }
-  game->showScore();
-  game->showLives();
-  game->render();
-
-  return interval;
+  showScore();
+  showLives();
+  render();
 }
 
 bool Game::canAddWord() {
@@ -229,42 +186,31 @@ bool Game::canAddWord() {
   return false;
 }
 
-void Game::showWord(void *param) {
+Uint32 Game::showWordSDL(Uint32 interval, void *param) {
   Game *game = static_cast<Game *>(param);
-  int random = rand() % game->words.size();
-  int randomX = rand() % (SCREEN_WIDTH - 100);
-
-  string randomWord = game->words.at(random);
-  if (randomX > 1100 && randomWord.size() > 5) {
-    randomX -= 300;
-  }
-
-  pair<int, int> position = make_pair(randomX, 0);
-
-  if (game->canAddWord()) {
-    game->wordsOnScreen->insert(
-        pair<string, pair<int, int>>(randomWord, position));
-  }
+  game->showWord();
+  return interval;
 }
 
-Uint32 Game::showWord(Uint32 interval, void *param) {
+void Game::showWordEmscripten(void *param) {
   Game *game = static_cast<Game *>(param);
-  int random = rand() % game->words.size();
+  game->showWord();
+}
+
+void Game::showWord() {
+  int random = rand() % words.size();
   int randomX = rand() % (SCREEN_WIDTH - 100);
 
-  string randomWord = game->words.at(random);
+  string randomWord = words.at(random);
   if (randomX > 1100 && randomWord.size() > 5) {
     randomX -= 300;
   }
 
   pair<int, int> position = make_pair(randomX, 0);
 
-  if (game->canAddWord()) {
-    game->wordsOnScreen->insert(
-        pair<string, pair<int, int>>(randomWord, position));
+  if (canAddWord()) {
+    wordsOnScreen->insert(pair<string, pair<int, int>>(randomWord, position));
   }
-
-  return interval;
 }
 
 void Game::removeWord() { wordsOnScreen->erase(wordTyping); }
