@@ -120,6 +120,45 @@ Uint32 Game::updateWordsLocationSDL(Uint32 interval, void *param) {
   return interval;
 }
 
+void Game::askForRetry() {
+  function<void()> sayNo = [&]() { isRunning = false; };
+
+  function<void()> sayYes = [&]() {
+    if (setTimer) {
+      SDL_RemoveTimer(timerIdShowWord);
+      SDL_RemoveTimer(timerIdUpdateWordsLocation);
+    }
+#ifdef __EMSCRIPTEN__
+    emscripten_clear_interval(game->timerIdShowWord);
+    emscripten_clear_interval(game->timerIdUpdateWordsLocation);
+    emscripten_cancel_main_loop();
+#endif
+    difficulty = NOT_SET;
+    player->resetLifes();
+  };
+
+  const char *retryMessage = "Want to retry?";
+  SDL_Rect dstYes, dstNo, dstMessage;
+
+  TTF_SizeUTF8(font, retryMessage, &dstMessage.w, &dstMessage.h);
+  dstMessage.x = SCREEN_WIDTH / 2 - (dstMessage.w / 2);
+  dstMessage.y = SCREEN_HEIGHT / 2 - (dstMessage.h / 2) - 100;
+
+  TTF_SizeUTF8(font, "YES", &dstYes.w, &dstYes.h);
+  dstYes.x = SCREEN_WIDTH / 2 - (dstYes.w / 2);
+  dstYes.y = dstMessage.y + 100;
+
+  TTF_SizeUTF8(font, "NO", &dstNo.w, &dstNo.h);
+  dstNo.x = SCREEN_WIDTH / 2 - (dstNo.w / 2);
+  dstNo.y = dstYes.y + 50;
+
+  renderClear();
+  addText(retryMessage, &dstMessage);
+  addButton("YES", &sayNo, &dstYes);
+  addButton("NO", &sayYes, &dstNo);
+  render();
+}
+
 void Game::updateWordsLocation() {
   map<string, pair<int, int>>::const_iterator it = wordsOnScreen->cbegin();
 
