@@ -108,34 +108,21 @@ Game::~Game() {
   SDL_Quit();
 }
 
-void Game::updateWordsLocationEmscripten(void *param) {
-  Game *game = static_cast<Game *>(param);
-  game->updateWordsLocation();
-}
-
-Uint32 Game::updateWordsLocationSDL(Uint32 interval, void *param) {
-  Game *game = static_cast<Game *>(param);
-  game->updateWordsLocation();
-
-  return interval;
-}
-
 void Game::askForRetry() {
   function<void()> sayNo = [&]() { isRunning = false; };
 
-  function<void()> sayYes = [&]() {
-    if (setTimer) {
-      SDL_RemoveTimer(timerIdShowWord);
-      SDL_RemoveTimer(timerIdUpdateWordsLocation);
-    }
+  function<void()> sayYes = [&]() { player->resetLifes(); };
+
 #ifdef __EMSCRIPTEN__
-    emscripten_clear_interval(game->timerIdShowWord);
-    emscripten_clear_interval(game->timerIdUpdateWordsLocation);
-    emscripten_cancel_main_loop();
+  emscripten_clear_interval(game->timerIdShowWord);
+  emscripten_clear_interval(game->timerIdUpdateWordsLocation);
+  emscripten_cancel_main_loop();
 #endif
-    difficulty = NOT_SET;
-    player->resetLifes();
-  };
+
+  if (setTimer) {
+    SDL_RemoveTimer(timerIdShowWord);
+    SDL_RemoveTimer(timerIdUpdateWordsLocation);
+  }
 
   const char *retryMessage = "Want to retry?";
   SDL_Rect dstYes, dstNo, dstMessage;
@@ -152,11 +139,28 @@ void Game::askForRetry() {
   dstNo.x = SCREEN_WIDTH / 2 - (dstNo.w / 2);
   dstNo.y = dstYes.y + 50;
 
-  renderClear();
-  addText(retryMessage, &dstMessage);
-  addButton("YES", &sayNo, &dstYes);
-  addButton("NO", &sayYes, &dstNo);
-  render();
+  setTimer = false;
+  difficulty = NOT_SET;
+
+  while (!setTimer && difficulty == NOT_SET) {
+    renderClear();
+    addText(retryMessage, &dstMessage);
+    addButton("YES", &sayYes, &dstYes);
+    addButton("NO", &sayNo, &dstNo);
+    render();
+  }
+}
+
+void Game::updateWordsLocationEmscripten(void *param) {
+  Game *game = static_cast<Game *>(param);
+  game->updateWordsLocation();
+}
+
+Uint32 Game::updateWordsLocationSDL(Uint32 interval, void *param) {
+  Game *game = static_cast<Game *>(param);
+  game->updateWordsLocation();
+
+  return interval;
 }
 
 void Game::updateWordsLocation() {
@@ -180,12 +184,7 @@ void Game::updateWordsLocation() {
       player->loseLife(1);
 
       if (player->health == 0) {
-        isRunning = false;
-#ifdef __EMSCRIPTEN__
-        emscripten_clear_interval(game->timerIdShowWord);
-        emscripten_clear_interval(game->timerIdUpdateWordsLocation);
-        emscripten_cancel_main_loop();
-#endif
+        askForRetry();
       }
     } else {
       SDL_Surface *surfaceMessage =
