@@ -1,5 +1,7 @@
 #include "Game.hpp"
 
+mutex wordsOnScreenMutex;
+
 bool Game::initializeAudio() {
 #ifdef __EMSCRIPTEN__
   if (Mix_Init(MIX_INIT_MP3) == 0) {
@@ -111,18 +113,20 @@ Game::~Game() {
 void Game::askForRetry() {
   function<void()> sayNo = [&]() { isRunning = false; };
 
-  function<void()> sayYes = [&]() { player->resetLifes(); };
+  function<void()> sayYes = [&]() {
+    player->resetLifes();
+    wordsOnScreenMutex.lock();
+    wordsOnScreen->clear();
+    wordsOnScreenMutex.unlock();
+  };
 
 #ifdef __EMSCRIPTEN__
   emscripten_clear_interval(game->timerIdShowWord);
   emscripten_clear_interval(game->timerIdUpdateWordsLocation);
   emscripten_cancel_main_loop();
 #endif
-
-  if (setTimer) {
-    SDL_RemoveTimer(timerIdShowWord);
-    SDL_RemoveTimer(timerIdUpdateWordsLocation);
-  }
+  bool showWordRemoved = SDL_RemoveTimer(timerIdShowWord);
+  bool updateWordsRemoved = SDL_RemoveTimer(timerIdUpdateWordsLocation);
 
   const char *retryMessage = "Want to retry?";
   SDL_Rect dstYes, dstNo, dstMessage;
@@ -158,7 +162,9 @@ void Game::updateWordsLocationEmscripten(void *param) {
 
 Uint32 Game::updateWordsLocationSDL(Uint32 interval, void *param) {
   Game *game = static_cast<Game *>(param);
+  wordsOnScreenMutex.lock();
   game->updateWordsLocation();
+  wordsOnScreenMutex.unlock();
 
   return interval;
 }
@@ -196,7 +202,9 @@ void Game::updateWordsLocation() {
       pair<int, int> newPosition =
           make_pair(it->second.first, it->second.second + 15);
 
-      wordsOnScreen->operator[](it->first) = newPosition;
+      if (wordsOnScreen->find(it->first) != wordsOnScreen->end()) {
+        wordsOnScreen->operator[](it->first) = newPosition;
+      }
 
       TTF_SizeUTF8(font, it->first.c_str(), &dst.w, &dst.h);
 
@@ -226,7 +234,10 @@ bool Game::canAddWord() {
 
 Uint32 Game::showWordSDL(Uint32 interval, void *param) {
   Game *game = static_cast<Game *>(param);
+  wordsOnScreenMutex.lock();
   game->showWord();
+  wordsOnScreenMutex.unlock();
+
   return interval;
 }
 
@@ -251,7 +262,11 @@ void Game::showWord() {
   }
 }
 
-void Game::removeWord() { wordsOnScreen->erase(wordTyping); }
+void Game::removeWord() {
+  wordsOnScreenMutex.lock();
+  wordsOnScreen->erase(wordTyping);
+  wordsOnScreenMutex.unlock();
+}
 
 bool Game::isWordTypingOnScreen() {
   if (wordsOnScreen->find(wordTyping) != wordsOnScreen->end()) {
