@@ -262,11 +262,7 @@ void Game::showWord() {
   }
 }
 
-void Game::removeWord() {
-  wordsOnScreenMutex.lock();
-  wordsOnScreen->erase(wordTyping);
-  wordsOnScreenMutex.unlock();
-}
+void Game::removeWord() { wordsOnScreen->erase(wordTyping); }
 
 bool Game::isWordTypingOnScreen() {
   if (wordsOnScreen->find(wordTyping) != wordsOnScreen->end()) {
