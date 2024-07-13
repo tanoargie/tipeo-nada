@@ -92,10 +92,8 @@ Game::~Game() {
   for (int i = 0; i < gameButtons.size(); i++) {
     delete gameButtons[i];
   }
-  if (setTimer) {
-    SDL_RemoveTimer(timerIdShowWord);
-    SDL_RemoveTimer(timerIdUpdateWordsLocation);
-  }
+  SDL_RemoveTimer(timerIdShowWord);
+  SDL_RemoveTimer(timerIdUpdateWordsLocation);
   delete wordsOnScreen;
   wordsOnScreen = NULL;
   delete player;
@@ -111,10 +109,15 @@ Game::~Game() {
 }
 
 void Game::askForRetry() {
-  function<void()> sayNo = [&]() { isRunning = false; };
+  function<void()> sayNo = [&]() {
+    isRunning = false;
+    sessionEnded = false;
+  };
 
   function<void()> sayYes = [&]() {
     player->resetLifes();
+    sessionEnded = false;
+    difficulty = NOT_SET;
     wordsOnScreenMutex.lock();
     wordsOnScreen->clear();
     wordsOnScreenMutex.unlock();
@@ -127,6 +130,10 @@ void Game::askForRetry() {
 #endif
   bool showWordRemoved = SDL_RemoveTimer(timerIdShowWord);
   bool updateWordsRemoved = SDL_RemoveTimer(timerIdUpdateWordsLocation);
+  if (updateWordsRemoved && showWordRemoved) {
+    timerIdShowWord = 0;
+    timerIdUpdateWordsLocation = 0;
+  }
 
   const char *retryMessage = "Want to retry?";
   SDL_Rect dstYes, dstNo, dstMessage;
@@ -143,10 +150,9 @@ void Game::askForRetry() {
   dstNo.x = SCREEN_WIDTH / 2 - (dstNo.w / 2);
   dstNo.y = dstYes.y + 50;
 
-  setTimer = false;
-  difficulty = NOT_SET;
+  sessionEnded = true;
 
-  while (!setTimer && difficulty == NOT_SET) {
+  while (sessionEnded) {
     renderClear();
     addText(retryMessage, &dstMessage);
     addButton("YES", &sayYes, &dstYes);
@@ -173,7 +179,7 @@ void Game::updateWordsLocation() {
   map<string, pair<int, int>>::const_iterator it = wordsOnScreen->cbegin();
 
   renderClear();
-  while (it != wordsOnScreen->cend()) {
+  while (!wordsOnScreen->empty() && it != wordsOnScreen->cend()) {
     SDL_Rect dst;
 
     dst.x = it->second.first;
@@ -190,7 +196,7 @@ void Game::updateWordsLocation() {
       player->loseLife(1);
 
       if (player->health == 0) {
-        askForRetry();
+        return askForRetry();
       }
     } else {
       SDL_Surface *surfaceMessage =
@@ -234,9 +240,7 @@ bool Game::canAddWord() {
 
 Uint32 Game::showWordSDL(Uint32 interval, void *param) {
   Game *game = static_cast<Game *>(param);
-  wordsOnScreenMutex.lock();
   game->showWord();
-  wordsOnScreenMutex.unlock();
 
   return interval;
 }

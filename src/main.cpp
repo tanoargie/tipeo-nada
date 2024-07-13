@@ -70,21 +70,21 @@ int main(int argc, char *argv[]) {
   dstHard.x = SCREEN_WIDTH / 2 - (dstHard.w / 2);
   dstHard.y = dstMedium.y + 50;
 
-  game->renderClear();
-  game->addText(diffMessage, &dstMessage);
-  game->addButton(getDifficultyChar(diffEasy), &diffEasyFn, &dstEasy);
-  game->addButton(getDifficultyChar(diffMedium), &diffMediumFn, &dstMedium);
-  game->addButton(getDifficultyChar(diffHard), &diffHardFn, &dstHard);
-  game->render();
-
 #ifdef __EMSCRIPTEN__
   emscripten_set_main_loop_arg(one_iter, game, 0, 1);
 #else
   while (game->running()) {
     game->handleEvents();
 
-    if (game->difficulty != NOT_SET) {
-      if (!game->setTimer) {
+    if (!game->sessionEnded && game->difficulty == NOT_SET) {
+      game->renderClear();
+      game->addText(diffMessage, &dstMessage);
+      game->addButton(getDifficultyChar(diffEasy), &diffEasyFn, &dstEasy);
+      game->addButton(getDifficultyChar(diffMedium), &diffMediumFn, &dstMedium);
+      game->addButton(getDifficultyChar(diffHard), &diffHardFn, &dstHard);
+      game->render();
+    } else if (!game->sessionEnded) {
+      if (game->timerIdShowWord == 0 || game->timerIdUpdateWordsLocation == 0) {
         if (game->difficulty == EASY) {
           game->timerIdShowWord = SDL_AddTimer(3000, &Game::showWordSDL, game);
         } else if (game->difficulty == MEDIUM) {
@@ -94,8 +94,8 @@ int main(int argc, char *argv[]) {
         }
         game->timerIdUpdateWordsLocation =
             SDL_AddTimer(250, &Game::updateWordsLocationSDL, game);
-        game->setTimer = true;
       }
+      game->sessionEnded = true;
     }
   }
 #endif

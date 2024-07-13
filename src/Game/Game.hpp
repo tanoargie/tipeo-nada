@@ -39,7 +39,7 @@ public:
   ~Game();
 
   difficultyEnum difficulty = NOT_SET;
-  bool setTimer = false;
+  bool sessionEnded = false;
   Uint32 timerIdShowWord = 0;
   Uint32 timerIdUpdateWordsLocation = 0;
 
