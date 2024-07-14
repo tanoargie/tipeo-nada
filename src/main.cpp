@@ -9,10 +9,15 @@ void one_iter(void *userData) {
 
   game->handleEvents();
 
-  if (game->difficulty != NOT_SET) {
-    // ya eligió dificultad
-
-    if (!game->setTimer) {
+  if (!game->sessionEnded && game->difficulty == NOT_SET) {
+    game->renderClear();
+    game->addText(diffMessage, &dstMessage);
+    game->addButton(getDifficultyChar(diffEasy), &diffEasyFn, &dstEasy);
+    game->addButton(getDifficultyChar(diffMedium), &diffMediumFn, &dstMedium);
+    game->addButton(getDifficultyChar(diffHard), &diffHardFn, &dstHard);
+    game->render();
+  } else if (!game->sessionEnded) {
+    if (game->timerIdShowWord == 0 || game->timerIdUpdateWordsLocation == 0) {
       if (game->difficulty == EASY) {
         game->timerIdShowWord =
             emscripten_set_interval(&Game::showWordEmscripten, 3000, userData);
@@ -27,6 +32,7 @@ void one_iter(void *userData) {
           &Game::updateWordsLocationEmscripten, 250, userData);
       game->setTimer = true;
     }
+    game->sessionEnded = true;
   }
 }
 #endif

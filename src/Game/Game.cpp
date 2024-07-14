@@ -163,7 +163,9 @@ void Game::askForRetry() {
 
 void Game::updateWordsLocationEmscripten(void *param) {
   Game *game = static_cast<Game *>(param);
+  wordsOnScreenMutex.lock();
   game->updateWordsLocation();
+  wordsOnScreenMutex.unlock();
 }
 
 Uint32 Game::updateWordsLocationSDL(Uint32 interval, void *param) {
