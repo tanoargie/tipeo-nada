@@ -61,6 +61,7 @@ public:
   bool running();
   bool canAddWord();
   void askForRetry();
+  void resetScore();
   void addButton(const char *text, function<void()> *fn, SDL_Rect *dst);
   void addText(const char *text, SDL_Rect *dst);
   void addScore(int sumScore);

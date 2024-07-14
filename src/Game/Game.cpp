@@ -108,6 +108,8 @@ Game::~Game() {
   SDL_Quit();
 }
 
+void Game::resetScore() { score = 0; }
+
 void Game::askForRetry() {
   function<void()> sayNo = [&]() {
     isRunning = false;
@@ -118,6 +120,7 @@ void Game::askForRetry() {
     player->resetLifes();
     sessionEnded = false;
     difficulty = NOT_SET;
+    resetScore();
     wordsOnScreenMutex.lock();
     wordsOnScreen->clear();
     wordsOnScreenMutex.unlock();
