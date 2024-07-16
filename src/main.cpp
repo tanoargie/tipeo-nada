@@ -38,7 +38,7 @@ void one_iter(void *userData) {
 #endif
 
 int main(int argc, char *argv[]) {
-  Game *game = new Game("TipeoNada");
+  Game *game = new Game();
 
   difficultyEnum diffEasy = EASY;
   difficultyEnum diffMedium = MEDIUM;

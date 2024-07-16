@@ -18,7 +18,7 @@ bool Game::initializeAudio() {
 #endif
 }
 
-Game::Game(const char *title) {
+Game::Game() {
   if (SDL_Init(SDL_INIT_TIMER) == 0 && IMG_Init(IMG_INIT_PNG) &&
       TTF_Init() == 0 && initializeAudio()) {
     cout << "Initialized!" << endl;

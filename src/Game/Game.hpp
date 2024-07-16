@@ -35,7 +35,7 @@ using namespace std;
 class Game {
 
 public:
-  Game(const char *title);
+  Game();
   ~Game();
 
   difficultyEnum difficulty = NOT_SET;
