@@ -53,8 +53,6 @@ public:
   void draw();
   void removeWord();
   bool isWordTypingOnScreen();
-  void showWord();
-  void updateWordsLocation();
   void showScore();
   void showLives();
   bool initializeAudio();
@@ -65,6 +63,9 @@ public:
   void addButton(const char *text, function<void()> *fn, SDL_Rect *dst);
   void addText(const char *text, SDL_Rect *dst);
   void addScore(int sumScore);
+
+  void showWord();
+  void updateWordsLocation();
 
   static Uint32 showWord(Uint32 interval, void *param);
   static void showWord(void *param);
