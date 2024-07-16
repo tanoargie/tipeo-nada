@@ -50,7 +50,6 @@ public:
   void handleEvents();
   void render();
   void renderClear();
-  void draw();
   void removeWord();
   bool isWordTypingOnScreen();
   void showScore();
