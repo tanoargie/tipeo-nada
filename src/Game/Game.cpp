@@ -164,14 +164,14 @@ void Game::askForRetry() {
   }
 }
 
-void Game::updateWordsLocationEmscripten(void *param) {
+void Game::updateWordsLocation(void *param) {
   Game *game = static_cast<Game *>(param);
   wordsOnScreenMutex.lock();
   game->updateWordsLocation();
   wordsOnScreenMutex.unlock();
 }
 
-Uint32 Game::updateWordsLocationSDL(Uint32 interval, void *param) {
+Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
   Game *game = static_cast<Game *>(param);
   wordsOnScreenMutex.lock();
   game->updateWordsLocation();
@@ -243,14 +243,14 @@ bool Game::canAddWord() {
   return false;
 }
 
-Uint32 Game::showWordSDL(Uint32 interval, void *param) {
+Uint32 Game::showWord(Uint32 interval, void *param) {
   Game *game = static_cast<Game *>(param);
   game->showWord();
 
   return interval;
 }
 
-void Game::showWordEmscripten(void *param) {
+void Game::showWord(void *param) {
   Game *game = static_cast<Game *>(param);
   game->showWord();
 }

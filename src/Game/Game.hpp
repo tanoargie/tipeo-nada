@@ -66,10 +66,10 @@ public:
   void addText(const char *text, SDL_Rect *dst);
   void addScore(int sumScore);
 
-  static Uint32 showWordSDL(Uint32 interval, void *param);
-  static void showWordEmscripten(void *param);
-  static Uint32 updateWordsLocationSDL(Uint32 interval, void *param);
-  static void updateWordsLocationEmscripten(void *param);
+  static Uint32 showWord(Uint32 interval, void *param);
+  static void showWord(void *param);
+  static Uint32 updateWordsLocation(Uint32 interval, void *param);
+  static void updateWordsLocation(void *param);
 
 private:
   int score = 0;
