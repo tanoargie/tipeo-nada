@@ -6,7 +6,6 @@
 #ifdef __EMSCRIPTEN__
 void one_iter(void *userData) {
   Game *game = static_cast<Game *>(userData);
-
   game->handleEvents();
 
   if (!game->sessionEnded && game->difficulty == NOT_SET) {
@@ -30,7 +29,6 @@ void one_iter(void *userData) {
       }
       game->timerIdUpdateWordsLocation =
           emscripten_set_interval(&Game::updateWordsLocation, 250, userData);
-      game->setTimer = true;
     }
     game->sessionEnded = true;
   }
