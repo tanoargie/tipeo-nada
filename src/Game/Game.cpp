@@ -127,8 +127,8 @@ void Game::askForRetry() {
   };
 
 #ifdef __EMSCRIPTEN__
-  emscripten_clear_interval(game->timerIdShowWord);
-  emscripten_clear_interval(game->timerIdUpdateWordsLocation);
+  emscripten_clear_interval(timerIdShowWord);
+  emscripten_clear_interval(timerIdUpdateWordsLocation);
   emscripten_cancel_main_loop();
 #endif
   bool showWordRemoved = SDL_RemoveTimer(timerIdShowWord);
