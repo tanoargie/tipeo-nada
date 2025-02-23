@@ -2,25 +2,9 @@
 
 mutex wordsOnScreenMutex;
 
-bool Game::initializeAudio() {
-#ifdef __EMSCRIPTEN__
-  if (Mix_Init(MIX_INIT_MP3) == 0) {
-    return true;
-  }
-  printf("Init emscripten audio failed: %s\n", SDL_GetError());
-  return false;
-#else
-  if (Mix_Init(MIX_INIT_MP3) != 0) {
-    return true;
-  }
-  printf("Init audio failed: %s\n", SDL_GetError());
-  return false;
-#endif
-}
-
 Game::Game() {
   if (SDL_Init(SDL_INIT_TIMER) == 0 && IMG_Init(IMG_INIT_PNG) &&
-      TTF_Init() == 0 && initializeAudio()) {
+      TTF_Init() == 0 && Mix_Init(MIX_INIT_MP3) != 0) {
     cout << "Initialized!" << endl;
 
 #ifdef __EMSCRIPTEN__
@@ -42,7 +26,7 @@ Game::Game() {
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
       printf("Error opening music: %s\n", Mix_GetError());
     } else {
-      backgroundMusic = Mix_LoadMUS("Assets/cyberpunk.mp3");
+      backgroundMusic = Mix_LoadMUS("src/Assets/cyberpunk.mp3");
       Mix_VolumeMusic((20 * MIX_MAX_VOLUME) / 100);
 
       if (!backgroundMusic) {
