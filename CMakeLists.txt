@@ -43,7 +43,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
 
   add_executable(${PROJECT_NAME}Web src/main.cpp src/Game/Game.cpp src/Player/Player.cpp src/Button/Button.cpp)
 
-  set_target_properties(${PROJECT_NAME}Web PROPERTIES LINK_FLAGS "-sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='[\"png\"]' -sUSE_SDL_TTF=2 -sUSE_SDL_MIXER=2 -sUSE_MPG123=1 -sSDL2_MIXER_FORMATS='[\"mp3\"]' -lmpg123 --preload-file ../src/Assets")
+  set_target_properties(${PROJECT_NAME}Web PROPERTIES LINK_FLAGS "-sALLOW_MEMORY_GROWTH -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='[\"png\"]' -sUSE_SDL_TTF=2 -sUSE_SDL_MIXER=2 -sUSE_MPG123=1 -sSDL2_MIXER_FORMATS='[\"mp3\"]' -lmpg123 --preload-file ../src/Assets")
 else()
   set( SDL2MIXER_SAMPLES OFF CACHE BOOL "" FORCE )
   set( SDL2MIXER_INSTALL OFF CACHE BOOL "" FORCE )

@@ -46,7 +46,7 @@ Game::Game() {
       return;
     }
 
-    font = TTF_OpenFont("Assets/OpenSans-Bold.ttf", 24);
+    font = TTF_OpenFont("src/Assets/OpenSans-Bold.ttf", 24);
     if (font == NULL) {
       cout << SDL_GetError();
     }
@@ -57,7 +57,7 @@ Game::Game() {
 
     srand(time(0));
 
-    ifstream wordfile("Assets/words.txt");
+    ifstream wordfile("src/Assets/words.txt");
     string line;
 
     while (getline(wordfile, line)) {
