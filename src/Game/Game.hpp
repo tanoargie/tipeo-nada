@@ -4,20 +4,12 @@
 #include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_events.h>
-#include <SDL_image.h>
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
-#include <SDL_mixer.h>
-#include <SDL_render.h>
 #include <SDL_timer.h>
-#include <SDL_ttf.h>
-#include <fstream>
-#include <iostream>
+
 #include <map>
-#include <mutex>
-#include <sstream>
 #include <string>
-#include <time.h>
 #include <utility>
 #include <vector>
 
@@ -27,8 +19,10 @@
 #include <emscripten/html5.h>
 #endif
 
+#include "../Audio/Audio.cpp"
 #include "../Button/Button.cpp"
-#include "../Player/Player.hpp"
+#include "../Graphics/Graphics.cpp"
+#include "../Player/Player.cpp"
 #include "../constants.cpp"
 
 using namespace std;
@@ -39,29 +33,24 @@ public:
   Game();
   ~Game();
 
-  difficultyEnum difficulty = NOT_SET;
+  difficulty difficulty = difficulty::NOT_SET;
   bool sessionEnded = false;
   Uint32 timerIdShowWord = 0;
   Uint32 timerIdUpdateWordsLocation = 0;
 
-  SDL_Color fontColor;
-  TTF_Font *font;
-  Mix_Music *backgroundMusic;
-
   void handleEvents();
-  void render();
-  void renderClear();
   void removeWord();
   bool isWordTypingOnScreen();
   void showScore();
   void showLives();
-  bool initializeAudio();
-  bool running();
   bool canAddWord();
   void askForRetry();
   void resetScore();
-  void addButton(const char *text, function<void()> *fn, SDL_Rect *dst);
-  void addText(const char *text, SDL_Rect *dst);
+  bool running();
+  void showMenu();
+  void gameLoop();
+  SDL_Rect addButton(const char *text, int x, int y, function<void()> *fn,
+                     position position);
   void addScore(int sumScore);
 
   void showWord();
@@ -69,19 +58,18 @@ public:
 
   static Uint32 showWord(Uint32 interval, void *param);
   static void showWord(void *param);
+
   static Uint32 updateWordsLocation(Uint32 interval, void *param);
   static void updateWordsLocation(void *param);
 
 private:
   int score = 0;
 
-  SDL_Surface *backgroundImage;
-  SDL_Texture *backgroundTex;
   vector<Button *> gameButtons;
   string wordTyping;
-  SDL_Window *window;
   Player *player;
-  SDL_Renderer *renderer;
+  Audio *audio;
+  Graphics *graphics;
   map<string, pair<int, int>> *wordsOnScreen;
   vector<string> words;
   bool isRunning;

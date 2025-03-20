@@ -1,59 +1,38 @@
 #include "Game.hpp"
 
+#include <fstream>
+#include <iostream>
+#include <string>
+
 mutex wordsOnScreenMutex;
+
+#ifdef __EMSCRIPTEN__
+void one_iter_session_ended(void *userData) {
+  Game *game = static_cast<Game *>(userData);
+  game->gameLoop();
+  game->handleEvents();
+}
+#endif
+
 
 Game::Game() {
   if (SDL_Init(SDL_INIT_TIMER) == 0 && IMG_Init(IMG_INIT_PNG) &&
-      TTF_Init() == 0 && Mix_Init(MIX_INIT_MP3) != 0) {
+      TTF_Init() == 0 && Mix_Init(MIX_INIT_MP3) != 0 &&
+      Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) >= 0) {
     cout << "Initialized!" << endl;
 
 #ifdef __EMSCRIPTEN__
     SDL_EventState(SDL_KEYUP, SDL_DISABLE);
 #endif
-    window = SDL_CreateWindow("TipeoNada", SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
-                              SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
-
-    if (!window) {
-      printf("Could not create window: %s\n", SDL_GetError());
-      isRunning = false;
-      return;
-    }
-
-    renderer = SDL_CreateRenderer(window, -1, 0);
-    wordsOnScreen = new map<string, pair<int, int>>();
-
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-      printf("Error opening music: %s\n", Mix_GetError());
-    } else {
-      backgroundMusic = Mix_LoadMUS("src/Assets/cyberpunk.mp3");
-      Mix_VolumeMusic((20 * MIX_MAX_VOLUME) / 100);
-
-      if (!backgroundMusic) {
-        printf("Error loading music: %s\n", Mix_GetError());
-      }
-
-      if (Mix_PlayMusic(backgroundMusic, -1) < 0) {
-        printf("Error playing music: %s\n", Mix_GetError());
-      }
-    }
-
+    graphics = new Graphics();
+    audio = new Audio();
     player = new Player();
 
-    if (!renderer) {
-      printf("Could not create renderer: %s\n", SDL_GetError());
+    if (!graphics || !audio || !player) {
       isRunning = false;
-      return;
     }
 
-    font = TTF_OpenFont("src/Assets/OpenSans-Bold.ttf", 24);
-    if (font == NULL) {
-      cout << SDL_GetError();
-    }
-
-    fontColor.r = 255;
-    fontColor.g = 255;
-    fontColor.b = 255;
+    wordsOnScreen = new map<string, pair<int, int>>();
 
     srand(time(0));
 
@@ -72,22 +51,70 @@ Game::Game() {
   }
 }
 
+void Game::showMenu() {
+  function<void()> setEasyDifficulty = [&]() { difficulty = difficulty::EASY; };
+  function<void()> setMediumDifficulty = [&]() { difficulty = difficulty::MEDIUM; };
+  function<void()> setHardDifficulty = [&]() { difficulty = difficulty::HARD; };
+
+  const char *diffMessage = "Choose difficulty, please:";
+  SDL_Rect diffRect = graphics->drawText(diffMessage, 0, -100, position::MIDDLE);
+  addButton(
+    difficultyToString(difficulty::EASY), 
+    0, 
+    100,
+    &setEasyDifficulty,
+    position::MIDDLE
+  );
+  addButton(
+    difficultyToString(difficulty::MEDIUM), 
+    0, 
+    150,
+    &setMediumDifficulty,
+    position::MIDDLE
+  );
+  addButton(
+    difficultyToString(difficulty::HARD), 
+    0, 
+    200,
+    &setHardDifficulty,
+    position::MIDDLE
+  );
+}
+
+bool Game::running() { return isRunning; }
+
+void Game::gameLoop() {
+  if (!sessionEnded && difficulty == difficulty::NOT_SET) {
+    graphics->renderClear();
+    showMenu();
+    graphics->render();
+  } else if (!sessionEnded) {
+    if (timerIdShowWord == 0 || timerIdUpdateWordsLocation == 0) {
+      if (difficulty == difficulty::EASY) {
+        timerIdShowWord = SDL_AddTimer(3000, &showWord, this);
+      } else if (difficulty == difficulty::MEDIUM) {
+        timerIdShowWord = SDL_AddTimer(1500, &showWord, this);
+      } else if (difficulty == difficulty::HARD) {
+        timerIdShowWord = SDL_AddTimer(500, &showWord, this);
+      }
+      timerIdUpdateWordsLocation =
+          SDL_AddTimer(250, &updateWordsLocation, this);
+    }
+    sessionEnded = true;
+  }
+}
+
 Game::~Game() {
   for (int i = 0; i < gameButtons.size(); i++) {
     delete gameButtons[i];
   }
+  delete graphics;
+  delete audio;
+  delete player;
   SDL_RemoveTimer(timerIdShowWord);
   SDL_RemoveTimer(timerIdUpdateWordsLocation);
   delete wordsOnScreen;
   wordsOnScreen = NULL;
-  delete player;
-  player = NULL;
-  SDL_FreeSurface(backgroundImage);
-  SDL_DestroyTexture(backgroundTex);
-  SDL_DestroyRenderer(renderer);
-  SDL_DestroyWindow(window);
-  Mix_FreeMusic(backgroundMusic);
-  TTF_CloseFont(font);
   IMG_Quit();
   SDL_Quit();
 }
@@ -103,7 +130,7 @@ void Game::askForRetry() {
   function<void()> sayYes = [&]() {
     player->resetLifes();
     sessionEnded = false;
-    difficulty = NOT_SET;
+    difficulty = difficulty::NOT_SET;
     resetScore();
     wordsOnScreenMutex.lock();
     wordsOnScreen->clear();
@@ -114,38 +141,29 @@ void Game::askForRetry() {
   emscripten_clear_interval(timerIdShowWord);
   emscripten_clear_interval(timerIdUpdateWordsLocation);
   emscripten_cancel_main_loop();
-#endif
+#else
   bool showWordRemoved = SDL_RemoveTimer(timerIdShowWord);
   bool updateWordsRemoved = SDL_RemoveTimer(timerIdUpdateWordsLocation);
   if (updateWordsRemoved && showWordRemoved) {
     timerIdShowWord = 0;
     timerIdUpdateWordsLocation = 0;
   }
-
-  const char *retryMessage = "Want to retry?";
-  SDL_Rect dstYes, dstNo, dstMessage;
-
-  TTF_SizeUTF8(font, retryMessage, &dstMessage.w, &dstMessage.h);
-  dstMessage.x = SCREEN_WIDTH / 2 - (dstMessage.w / 2);
-  dstMessage.y = SCREEN_HEIGHT / 2 - (dstMessage.h / 2) - 100;
-
-  TTF_SizeUTF8(font, "YES", &dstYes.w, &dstYes.h);
-  dstYes.x = SCREEN_WIDTH / 2 - (dstYes.w / 2);
-  dstYes.y = dstMessage.y + 100;
-
-  TTF_SizeUTF8(font, "NO", &dstNo.w, &dstNo.h);
-  dstNo.x = SCREEN_WIDTH / 2 - (dstNo.w / 2);
-  dstNo.y = dstYes.y + 50;
-
+#endif
   sessionEnded = true;
-
+#ifdef __EMSCRIPTEN__
+  emscripten_set_main_loop_arg(one_iter_session_ended, this, 0, 1);
+#else
   while (sessionEnded) {
-    renderClear();
-    addText(retryMessage, &dstMessage);
-    addButton("YES", &sayYes, &dstYes);
-    addButton("NO", &sayNo, &dstNo);
-    render();
+    graphics->renderClear();
+    const char *retryMessage = "Want to retry?";
+    SDL_Rect retryDst =
+        graphics->drawText(retryMessage, 0, -100, position::MIDDLE);
+    SDL_Rect yesRect =
+        addButton("YES", 0, retryDst.y + 100, &sayYes, position::MIDDLE);
+    addButton("NO", 0, yesRect.y + 50, &sayNo, position::MIDDLE);
+    graphics->render();
   }
+#endif
 }
 
 void Game::updateWordsLocation(void *param) {
@@ -167,33 +185,22 @@ Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
 void Game::updateWordsLocation() {
   map<string, pair<int, int>>::const_iterator it = wordsOnScreen->cbegin();
 
-  renderClear();
+  graphics->renderClear();
   while (!wordsOnScreen->empty() && it != wordsOnScreen->cend()) {
-    SDL_Rect dst;
-
-    dst.x = it->second.first;
-    dst.y = it->second.second;
-
     int windowHeight;
     int windowWidth;
 
-    SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+    graphics->getWindowSize(&windowWidth, &windowHeight);
 
     if (it->second.second + 15 > windowHeight) {
       wordsOnScreen->erase(it++);
 
       player->loseLife(1);
 
-      if (player->health == 0) {
+      if (!player->isAlive()) {
         return askForRetry();
       }
     } else {
-      SDL_Surface *surfaceMessage =
-          TTF_RenderUTF8_Blended(font, it->first.c_str(), fontColor);
-
-      SDL_Texture *message =
-          SDL_CreateTextureFromSurface(renderer, surfaceMessage);
-
       pair<int, int> newPosition =
           make_pair(it->second.first, it->second.second + 15);
 
@@ -201,27 +208,23 @@ void Game::updateWordsLocation() {
         wordsOnScreen->operator[](it->first) = newPosition;
       }
 
-      TTF_SizeUTF8(font, it->first.c_str(), &dst.w, &dst.h);
-
-      SDL_RenderCopy(renderer, message, NULL, &dst);
-
-      SDL_FreeSurface(surfaceMessage);
-      SDL_DestroyTexture(message);
+      graphics->drawText(it->first.c_str(), it->second.first,
+                         it->second.second);
 
       it++;
     }
   }
   showScore();
   showLives();
-  render();
+  graphics->render();
 }
 
 bool Game::canAddWord() {
-  if (difficulty == EASY) {
+  if (difficulty == difficulty::EASY) {
     return wordsOnScreen->size() < 10;
-  } else if (difficulty == MEDIUM) {
+  } else if (difficulty == difficulty::MEDIUM) {
     return wordsOnScreen->size() < 20;
-  } else if (difficulty == HARD) {
+  } else if (difficulty == difficulty::HARD) {
     return wordsOnScreen->size() < 30;
   }
   return false;
@@ -291,11 +294,11 @@ void Game::handleEvents() {
       if (isEnter) {
         if (isWordTypingOnScreen()) {
           removeWord();
-          if (difficulty == EASY) {
+          if (difficulty == difficulty::EASY) {
             addScore(1);
-          } else if (difficulty == MEDIUM) {
+          } else if (difficulty == difficulty::MEDIUM) {
             addScore(3);
-          } else if (difficulty == HARD) {
+          } else if (difficulty == difficulty::HARD) {
             addScore(5);
           }
         }
@@ -312,53 +315,19 @@ void Game::handleEvents() {
 void Game::addScore(int sumScore) { score += sumScore; }
 
 void Game::showScore() {
-  stringstream ss;
-  ss << "Points: " << score;
-  SDL_Surface *surface =
-      TTF_RenderUTF8_Blended(font, ss.str().c_str(), fontColor);
-  SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-  SDL_Rect dst;
-  TTF_SizeUTF8(font, ss.str().c_str(), &dst.w, &dst.h);
-  dst.x = SCREEN_WIDTH - 150;
-  dst.y = SCREEN_HEIGHT - 100;
-
-  SDL_RenderCopy(renderer, texture, NULL, &dst);
-
-  SDL_FreeSurface(surface);
-  SDL_DestroyTexture(texture);
+  string text = string("Points: ") + to_string(score);
+  graphics->drawText(text.c_str(), SCREEN_WIDTH - 150, SCREEN_HEIGHT - 100);
 }
 
 void Game::showLives() {
-  stringstream ss;
-  ss << "Lives: " << player->health;
-  SDL_Surface *surface =
-      TTF_RenderUTF8_Blended(font, ss.str().c_str(), fontColor);
-  SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-  SDL_Rect dst;
-  TTF_SizeUTF8(font, ss.str().c_str(), &dst.w, &dst.h);
-  dst.x = SCREEN_WIDTH - 150;
-  dst.y = SCREEN_HEIGHT - 50;
-
-  SDL_RenderCopy(renderer, texture, NULL, &dst);
-
-  SDL_FreeSurface(surface);
-  SDL_DestroyTexture(texture);
+  string text = string("Lives: ") + to_string(player->getLife());
+  graphics->drawText(text.c_str(), SCREEN_WIDTH - 150, SCREEN_HEIGHT - 50);
 }
 
-void Game::render() { SDL_RenderPresent(renderer); }
-
-void Game::renderClear() { SDL_RenderClear(renderer); }
-
-void Game::addButton(const char *text, function<void()> *fn, SDL_Rect *dst) {
-  Button *button = new Button(text, fontColor, font, dst, renderer, fn);
+SDL_Rect Game::addButton(const char *text, int x, int y, function<void()> *fn,
+                         position position = position::NOT_SET) {
+  SDL_Rect dst = graphics->drawText(text, x, y, position);
+  Button *button = new Button(fn, dst);
   gameButtons.push_back(button);
+  return dst;
 }
-
-void Game::addText(const char *text, SDL_Rect *dst) {
-  SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text, fontColor);
-  SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-  SDL_RenderCopy(renderer, texture, NULL, dst);
-}
-
-bool Game::running() { return isRunning; }

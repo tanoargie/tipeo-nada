@@ -1,7 +1,17 @@
-#include "Player.hpp"
+#ifndef Player_hpp
+#define Player_hpp
 
-Player::Player() {}
+class Player {
+public:
+  Player() { health = 5; }
+  ~Player() {}
 
-void Player::loseLife(int lostLife) { health -= lostLife; }
+  bool isAlive() { return health > 0; };
+  void loseLife(int lostLife) { health -= lostLife; };
+  void resetLifes() { health = 5; };
+  int getLife() { return health; }
 
-void Player::resetLifes() { health = 5; }
+private:
+  int health;
+};
+#endif

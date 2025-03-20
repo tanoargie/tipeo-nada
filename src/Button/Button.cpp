@@ -2,29 +2,16 @@
 #define Button_cpp
 
 #include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_mouse.h>
-#include <SDL_rect.h>
-#include <SDL_ttf.h>
+
 #include <functional>
-#include <iostream>
-#include <string>
 
 using namespace std;
 
 class Button {
 public:
-  Button(const char *text, SDL_Color fontColor, TTF_Font *font, SDL_Rect *dst,
-         SDL_Renderer *renderer, function<void()> *fn)
-      : font(font), fontColor(fontColor), dst(dst) {
-
+  Button(function<void()> *fn, SDL_Rect dst) : dst(dst) {
     callback = new function<void()>;
     *callback = *fn;
-
-    surface = TTF_RenderUTF8_Blended(font, text, fontColor);
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-    SDL_RenderCopy(renderer, texture, NULL, dst);
   };
 
   void handleEvents(SDL_Event event) {
@@ -41,8 +28,7 @@ public:
     int x, y;
     SDL_GetMouseState(&x, &y);
 
-    if (x > dst->x && x < dst->x + dst->w && y > dst->y &&
-        y < dst->y + dst->h) {
+    if (x > dst.x && x < dst.x + dst.w && y > dst.y && y < dst.y + dst.h) {
       return true;
     }
     return false;
@@ -51,19 +37,11 @@ public:
   ~Button() {
     delete callback;
     callback = NULL;
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
   };
 
 private:
-  bool selected;
-  SDL_Texture *texture;
-  SDL_Surface *surface;
-  SDL_Color fontColor;
-  SDL_Rect *dst;
-  TTF_Font *font;
+  SDL_Rect dst;
   function<void()> *callback;
-  char *text;
 };
 
 #endif
