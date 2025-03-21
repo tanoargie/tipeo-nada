@@ -48,6 +48,7 @@ public:
   void resetScore();
   bool running();
   void showMenu();
+  void showRetryMenu();
   void gameLoop();
   SDL_Rect addButton(const char *text, int x, int y, function<void()> *fn,
                      position position);

@@ -9,8 +9,9 @@ mutex wordsOnScreenMutex;
 #ifdef __EMSCRIPTEN__
 void one_iter_session_ended(void *userData) {
   Game *game = static_cast<Game *>(userData);
-  game->gameLoop();
-  game->handleEvents();
+  if (game->sessionEnded) {
+    game->showRetryMenu();    
+  }
 }
 #endif
 
@@ -20,7 +21,6 @@ Game::Game() {
       TTF_Init() == 0 && Mix_Init(MIX_INIT_MP3) != 0 &&
       Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) >= 0) {
     cout << "Initialized!" << endl;
-
 #ifdef __EMSCRIPTEN__
     SDL_EventState(SDL_KEYUP, SDL_DISABLE);
 #endif
@@ -81,6 +81,30 @@ void Game::showMenu() {
   );
 }
 
+void Game::showRetryMenu() {
+  function<void()> sayNo = [&]() {
+    isRunning = false;
+    sessionEnded = false;
+  };
+
+  function<void()> sayYes = [&]() {
+    player->resetLifes();
+    sessionEnded = false;
+    difficulty = difficulty::NOT_SET;
+    resetScore();
+    wordsOnScreenMutex.lock();
+    wordsOnScreen->clear();
+    wordsOnScreenMutex.unlock();
+  };
+  
+  graphics->renderClear();
+  const char *retryMessage = "Want to retry?";
+  graphics->drawText(retryMessage, 0, -100, position::MIDDLE);
+  addButton("YES", 0, 100, &sayYes, position::MIDDLE);
+  addButton("NO", 0, 50, &sayNo, position::MIDDLE);
+  graphics->render();
+}
+
 bool Game::running() { return isRunning; }
 
 void Game::gameLoop() {
@@ -100,7 +124,6 @@ void Game::gameLoop() {
       timerIdUpdateWordsLocation =
           SDL_AddTimer(250, &updateWordsLocation, this);
     }
-    sessionEnded = true;
   }
 }
 
@@ -122,21 +145,6 @@ Game::~Game() {
 void Game::resetScore() { score = 0; }
 
 void Game::askForRetry() {
-  function<void()> sayNo = [&]() {
-    isRunning = false;
-    sessionEnded = false;
-  };
-
-  function<void()> sayYes = [&]() {
-    player->resetLifes();
-    sessionEnded = false;
-    difficulty = difficulty::NOT_SET;
-    resetScore();
-    wordsOnScreenMutex.lock();
-    wordsOnScreen->clear();
-    wordsOnScreenMutex.unlock();
-  };
-
 #ifdef __EMSCRIPTEN__
   emscripten_clear_interval(timerIdShowWord);
   emscripten_clear_interval(timerIdUpdateWordsLocation);
@@ -154,14 +162,7 @@ void Game::askForRetry() {
   emscripten_set_main_loop_arg(one_iter_session_ended, this, 0, 1);
 #else
   while (sessionEnded) {
-    graphics->renderClear();
-    const char *retryMessage = "Want to retry?";
-    SDL_Rect retryDst =
-        graphics->drawText(retryMessage, 0, -100, position::MIDDLE);
-    SDL_Rect yesRect =
-        addButton("YES", 0, retryDst.y + 100, &sayYes, position::MIDDLE);
-    addButton("NO", 0, yesRect.y + 50, &sayNo, position::MIDDLE);
-    graphics->render();
+    showRetryMenu();
   }
 #endif
 }
@@ -273,16 +274,14 @@ void Game::handleEvents() {
     for (int i = 0; i < gameButtons.size(); i++) {
       gameButtons[i]->handleEvents(event);
     }
-    string newChar = "";
 #ifdef __EMSCRIPTEN__
-    bool isBackspace = event.key.keysym.sym == 42;
-    bool isEnter = event.key.keysym.sym == 40;
-    newChar = event.key.keysym.scancode;
+    bool isBackspace = event.key.keysym.scancode == 42;
+    bool isEnter = event.key.keysym.scancode == 40;
 #else
     bool isBackspace = event.key.keysym.sym == SDLK_BACKSPACE;
     bool isEnter = event.key.keysym.sym == SDLK_RETURN;
-    newChar = event.text.text;
 #endif
+    string newChar = event.text.text;
     switch (event.type) {
     case SDL_QUIT:
       isRunning = false;
