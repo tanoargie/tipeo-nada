@@ -12,6 +12,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <fstream>
+#include <string>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>

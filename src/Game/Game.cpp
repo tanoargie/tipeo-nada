@@ -1,9 +1,5 @@
 #include "Game.hpp"
 
-#include <fstream>
-#include <iostream>
-#include <string>
-
 mutex wordsOnScreenMutex;
 
 #ifdef __EMSCRIPTEN__
