@@ -5,7 +5,7 @@ mutex wordsOnScreenMutex;
 #ifdef __EMSCRIPTEN__
 void one_iter_session_ended(void *userData) {
   Game *game = static_cast<Game *>(userData);
-  if (game->sessionEnded) {
+  if (game->isSessionEnded()) {
     game->showRetryMenu();    
   }
 }
@@ -103,6 +103,8 @@ void Game::showRetryMenu() {
 }
 
 bool Game::running() { return isRunning; }
+
+bool Game::isSessionEnded() { return sessionEnded; }
 
 void Game::gameLoop() {
   if (!sessionEnded && difficulty == difficulty::NOT_SET) {

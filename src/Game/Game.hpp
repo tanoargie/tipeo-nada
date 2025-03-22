@@ -33,8 +33,6 @@ public:
   Game();
   ~Game();
 
-  difficulty difficulty = difficulty::NOT_SET;
-  bool sessionEnded = false;
   Uint32 timerIdShowWord = 0;
   Uint32 timerIdUpdateWordsLocation = 0;
 
@@ -47,6 +45,7 @@ public:
   void askForRetry();
   void resetScore();
   bool running();
+  bool isSessionEnded();
   void showMenu();
   void showRetryMenu();
   void gameLoop();
@@ -65,6 +64,8 @@ public:
 
 private:
   int score = 0;
+  bool sessionEnded = false;
+  difficulty difficulty = difficulty::NOT_SET;
 
   vector<Button *> gameButtons;
   string wordTyping;
