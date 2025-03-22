@@ -4,8 +4,6 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_render.h>
-#include <iostream>
-
 
 #include "../Font/Font.cpp"
 #include "../constants.cpp"

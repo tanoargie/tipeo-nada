@@ -27,8 +27,6 @@
 #include "../Player/Player.cpp"
 #include "../constants.cpp"
 
-using namespace std;
-
 class Game {
 
 public:
