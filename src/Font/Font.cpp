@@ -4,7 +4,7 @@
 class Font {
 public:
   Font() {
-    fontType = TTF_OpenFont("src/Assets/OpenSans-Bold.ttf", 24);
+    fontType = TTF_OpenFont("../src/Assets/OpenSans-Bold.ttf", 24);
     if (!fontType) {
       printf("Could not create fonts: %s\n", SDL_GetError());
     }

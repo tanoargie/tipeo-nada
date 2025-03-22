@@ -32,7 +32,7 @@ Game::Game() {
 
     srand(time(0));
 
-    ifstream wordfile("src/Assets/words.txt");
+    ifstream wordfile("../src/Assets/words.txt");
     string line;
 
     while (getline(wordfile, line)) {
@@ -91,6 +91,7 @@ void Game::showRetryMenu() {
     wordsOnScreenMutex.lock();
     wordsOnScreen->clear();
     wordsOnScreenMutex.unlock();
+    gameLoop();
   };
   
   graphics->renderClear();

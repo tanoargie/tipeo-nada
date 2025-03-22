@@ -7,7 +7,7 @@
 class Audio {
 public:
   Audio() {
-    backgroundMusic = Mix_LoadMUS("src/Assets/cyberpunk.mp3");
+    backgroundMusic = Mix_LoadMUS("../src/Assets/cyberpunk.mp3");
     if (!backgroundMusic) {
       printf("Error loading music: %s\n", Mix_GetError());
     }

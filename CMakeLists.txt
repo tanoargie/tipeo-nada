@@ -41,7 +41,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
   set( SDL2MIXER_WAVPACK OFF CACHE BOOL "" FORCE )
   add_subdirectory("external/SDL_mixer")
 
-  add_executable(${PROJECT_NAME}Web src/main.cpp src/Game/Game.cpp src/Player/Player.cpp src/Button/Button.cpp)
+  add_executable(${PROJECT_NAME}Web src/main.cpp src/Game/Game.cpp src/Player/Player.cpp src/Button/Button.cpp src/Graphics/Graphics.cpp src/Font/Font.cpp src/Audio/Audio.cpp)
 
   set_target_properties(${PROJECT_NAME}Web PROPERTIES LINK_FLAGS "-sALLOW_MEMORY_GROWTH -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sSDL2_IMAGE_FORMATS='[\"png\"]' -sUSE_SDL_TTF=2 -sUSE_SDL_MIXER=2 -sUSE_MPG123=1 -sSDL2_MIXER_FORMATS='[\"mp3\"]' -lmpg123 --preload-file ../src/Assets")
 else()
@@ -56,7 +56,7 @@ else()
   set( SDL2MIXER_OPUS OFF CACHE BOOL "" FORCE )
   set( SDL2MIXER_WAVPACK OFF CACHE BOOL "" FORCE )
 
-  add_executable(${PROJECT_NAME} src/main.cpp src/Game/Game.cpp src/Player/Player.cpp src/Button/Button.cpp)
+  add_executable(${PROJECT_NAME} src/main.cpp src/Game/Game.cpp src/Player/Player.cpp src/Button/Button.cpp src/Graphics/Graphics.cpp src/Font/Font.cpp src/Audio/Audio.cpp)
 
   add_subdirectory("external/SDL")
   target_link_libraries(${PROJECT_NAME} SDL2)
