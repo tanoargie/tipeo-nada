@@ -17,7 +17,6 @@ static const char *difficultyToString(difficulty difficulty) {
     return "HARD";
   default:
     return "NOT_SET";
-    break;
   }
 };
 
