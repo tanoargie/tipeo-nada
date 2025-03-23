@@ -33,9 +33,6 @@ public:
   Game();
   ~Game();
 
-  Uint32 timerIdShowWord = 0;
-  Uint32 timerIdUpdateWordsLocation = 0;
-
   void handleEvents();
   void removeWord();
   bool isWordTypingOnScreen();
@@ -43,10 +40,9 @@ public:
   void showLives();
   bool canAddWord();
   void askForRetry();
-  void resetScore();
   bool running();
-  bool isSessionEnded();
   void showMenu();
+  void setTimers();
   void showRetryMenu();
   void gameLoop();
   SDL_Rect addButton(const char *text, int x, int y, function<void()> *fn,
@@ -57,15 +53,14 @@ public:
   void updateWordsLocation();
 
   static Uint32 showWord(Uint32 interval, void *param);
-  static void showWord(void *param);
-
   static Uint32 updateWordsLocation(Uint32 interval, void *param);
-  static void updateWordsLocation(void *param);
 
 private:
   int score = 0;
   bool sessionEnded = false;
   difficulty difficulty = difficulty::NOT_SET;
+  Uint32 timerIdShowWord = 0;
+  Uint32 timerIdUpdateWordsLocation = 0;
 
   vector<Button *> gameButtons;
   string wordTyping;

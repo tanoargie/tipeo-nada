@@ -2,12 +2,12 @@
 #define constants_cpp
 
 const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 960;
+const int SCREEN_HEIGHT = 900;
 
 enum class difficulty { NOT_SET, EASY, MEDIUM, HARD };
 enum class position { NOT_SET, TOP, MIDDLE, BOTTOM };
 
-static const char *difficultyToString(difficulty difficulty) {
+static const char *difficultyStr(difficulty difficulty) {
   switch (difficulty) {
   case difficulty::EASY:
     return "EASY";

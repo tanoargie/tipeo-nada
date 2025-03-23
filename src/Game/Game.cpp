@@ -2,16 +2,6 @@
 
 mutex wordsOnScreenMutex;
 
-#ifdef __EMSCRIPTEN__
-void one_iter_session_ended(void *userData) {
-  Game *game = static_cast<Game *>(userData);
-  if (game->isSessionEnded()) {
-    game->showRetryMenu();    
-  }
-}
-#endif
-
-
 Game::Game() {
   if (SDL_Init(SDL_INIT_TIMER) == 0 && IMG_Init(IMG_INIT_PNG) &&
       TTF_Init() == 0 && Mix_Init(MIX_INIT_MP3) != 0 &&
@@ -53,76 +43,80 @@ void Game::showMenu() {
   function<void()> setHardDifficulty = [&]() { difficulty = difficulty::HARD; };
 
   const char *diffMessage = "Choose difficulty, please:";
+  graphics->renderClear();
   SDL_Rect diffRect = graphics->drawText(diffMessage, 0, -100, position::MIDDLE);
   addButton(
-    difficultyToString(difficulty::EASY), 
+    difficultyStr(difficulty::EASY), 
     0, 
     100,
     &setEasyDifficulty,
     position::MIDDLE
   );
   addButton(
-    difficultyToString(difficulty::MEDIUM), 
+    difficultyStr(difficulty::MEDIUM), 
     0, 
     150,
     &setMediumDifficulty,
     position::MIDDLE
   );
   addButton(
-    difficultyToString(difficulty::HARD), 
+    difficultyStr(difficulty::HARD), 
     0, 
     200,
     &setHardDifficulty,
     position::MIDDLE
   );
+  graphics->render();
 }
 
 void Game::showRetryMenu() {
   function<void()> sayNo = [&]() {
+    sessionEnded = true;
     isRunning = false;
-    sessionEnded = false;
   };
 
   function<void()> sayYes = [&]() {
     player->resetLifes();
     sessionEnded = false;
     difficulty = difficulty::NOT_SET;
-    resetScore();
+    score = 0;
     wordsOnScreenMutex.lock();
     wordsOnScreen->clear();
     wordsOnScreenMutex.unlock();
-    gameLoop();
   };
   
   graphics->renderClear();
   const char *retryMessage = "Want to retry?";
   graphics->drawText(retryMessage, 0, -100, position::MIDDLE);
   addButton("YES", 0, 100, &sayYes, position::MIDDLE);
-  addButton("NO", 0, 50, &sayNo, position::MIDDLE);
+  #ifndef __EMSCRIPTEN__
+    addButton("NO", 0, 50, &sayNo, position::MIDDLE);
+  #endif
   graphics->render();
 }
 
 bool Game::running() { return isRunning; }
 
-bool Game::isSessionEnded() { return sessionEnded; }
-
 void Game::gameLoop() {
   if (!sessionEnded && difficulty == difficulty::NOT_SET) {
-    graphics->renderClear();
     showMenu();
-    graphics->render();
   } else if (!sessionEnded) {
-    if (timerIdShowWord == 0 || timerIdUpdateWordsLocation == 0) {
-      if (difficulty == difficulty::EASY) {
-        timerIdShowWord = SDL_AddTimer(3000, &showWord, this);
-      } else if (difficulty == difficulty::MEDIUM) {
-        timerIdShowWord = SDL_AddTimer(1500, &showWord, this);
-      } else if (difficulty == difficulty::HARD) {
-        timerIdShowWord = SDL_AddTimer(500, &showWord, this);
-      }
-      timerIdUpdateWordsLocation =
-          SDL_AddTimer(250, &updateWordsLocation, this);
+    setTimers();
+  } else {
+    askForRetry();
+  }
+}
+
+void Game::setTimers() {
+  if (timerIdShowWord == 0 || timerIdUpdateWordsLocation == 0) {
+    if (difficulty == difficulty::EASY) {
+      timerIdShowWord = SDL_AddTimer(3000, &showWord, this);
+    } else if (difficulty == difficulty::MEDIUM) {
+      timerIdShowWord = SDL_AddTimer(1500, &showWord, this);
+    } else if (difficulty == difficulty::HARD) {
+      timerIdShowWord = SDL_AddTimer(500, &showWord, this);
     }
+    timerIdUpdateWordsLocation = SDL_AddTimer(250, &updateWordsLocation, this);
   }
 }
 
@@ -141,36 +135,14 @@ Game::~Game() {
   SDL_Quit();
 }
 
-void Game::resetScore() { score = 0; }
-
 void Game::askForRetry() {
-#ifdef __EMSCRIPTEN__
-  emscripten_clear_interval(timerIdShowWord);
-  emscripten_clear_interval(timerIdUpdateWordsLocation);
-  emscripten_cancel_main_loop();
-#else
   bool showWordRemoved = SDL_RemoveTimer(timerIdShowWord);
   bool updateWordsRemoved = SDL_RemoveTimer(timerIdUpdateWordsLocation);
   if (updateWordsRemoved && showWordRemoved) {
     timerIdShowWord = 0;
     timerIdUpdateWordsLocation = 0;
   }
-#endif
-  sessionEnded = true;
-#ifdef __EMSCRIPTEN__
-  emscripten_set_main_loop_arg(one_iter_session_ended, this, 0, 1);
-#else
-  while (sessionEnded) {
-    showRetryMenu();
-  }
-#endif
-}
-
-void Game::updateWordsLocation(void *param) {
-  Game *game = static_cast<Game *>(param);
-  wordsOnScreenMutex.lock();
-  game->updateWordsLocation();
-  wordsOnScreenMutex.unlock();
+  showRetryMenu();
 }
 
 Uint32 Game::updateWordsLocation(Uint32 interval, void *param) {
@@ -198,7 +170,8 @@ void Game::updateWordsLocation() {
       player->loseLife(1);
 
       if (!player->isAlive()) {
-        return askForRetry();
+        sessionEnded = true;
+        return;
       }
     } else {
       pair<int, int> newPosition =
@@ -220,13 +193,9 @@ void Game::updateWordsLocation() {
 }
 
 bool Game::canAddWord() {
-  if (difficulty == difficulty::EASY) {
-    return wordsOnScreen->size() < 10;
-  } else if (difficulty == difficulty::MEDIUM) {
-    return wordsOnScreen->size() < 20;
-  } else if (difficulty == difficulty::HARD) {
-    return wordsOnScreen->size() < 30;
-  }
+  if (difficulty == difficulty::EASY) return wordsOnScreen->size() < 10;
+  if (difficulty == difficulty::MEDIUM) return wordsOnScreen->size() < 20;
+  if (difficulty == difficulty::HARD) return wordsOnScreen->size() < 30;
   return false;
 }
 
@@ -235,11 +204,6 @@ Uint32 Game::showWord(Uint32 interval, void *param) {
   game->showWord();
 
   return interval;
-}
-
-void Game::showWord(void *param) {
-  Game *game = static_cast<Game *>(param);
-  game->showWord();
 }
 
 void Game::showWord() {
@@ -261,9 +225,7 @@ void Game::showWord() {
 void Game::removeWord() { wordsOnScreen->erase(wordTyping); }
 
 bool Game::isWordTypingOnScreen() {
-  if (wordsOnScreen->find(wordTyping) != wordsOnScreen->end()) {
-    return true;
-  }
+  if (wordsOnScreen->find(wordTyping) != wordsOnScreen->end()) return true;
   return false;
 }
 
