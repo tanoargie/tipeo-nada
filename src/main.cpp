@@ -6,10 +6,8 @@
 #ifdef __EMSCRIPTEN__
 void one_iter_game_loop(void *userData) {
   Game *game = static_cast<Game *>(userData);
-  if (game->running()) {
-    game->gameLoop();
-    game->handleEvents();
-  }
+  game->gameLoop();
+  game->handleEvents();
 }
 #endif
 
