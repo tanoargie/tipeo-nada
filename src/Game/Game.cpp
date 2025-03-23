@@ -121,6 +121,9 @@ void Game::setTimers() {
 }
 
 Game::~Game() {
+  #ifdef __EMSCRIPTEN__
+    emscripten_cancel_main_loop();
+  #endif
   for (int i = 0; i < gameButtons.size(); i++) {
     delete gameButtons[i];
   }
@@ -235,13 +238,8 @@ void Game::handleEvents() {
     for (int i = 0; i < gameButtons.size(); i++) {
       gameButtons[i]->handleEvents(event);
     }
-#ifdef __EMSCRIPTEN__
     bool isBackspace = event.key.keysym.scancode == 42;
     bool isEnter = event.key.keysym.scancode == 40;
-#else
-    bool isBackspace = event.key.keysym.sym == SDLK_BACKSPACE;
-    bool isEnter = event.key.keysym.sym == SDLK_RETURN;
-#endif
     string newChar = event.text.text;
     switch (event.type) {
     case SDL_QUIT:
