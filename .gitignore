@@ -19,3 +19,4 @@ _deps
 *.out
 bin
 .vscode
+.clangd
