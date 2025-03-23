@@ -18,3 +18,4 @@ _deps
 .DS_Store
 *.out
 bin
+.vscode
