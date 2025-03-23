@@ -6,7 +6,7 @@ Game::Game() {
   if (SDL_Init(SDL_INIT_TIMER) == 0 && IMG_Init(IMG_INIT_PNG) &&
       TTF_Init() == 0 && Mix_Init(MIX_INIT_MP3) != 0 &&
       Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) >= 0) {
-    printf("Initialized!");
+    printf("Initialized!\n");
 #ifdef __EMSCRIPTEN__
     SDL_EventState(SDL_KEYUP, SDL_DISABLE);
 #endif
